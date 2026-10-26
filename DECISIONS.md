@@ -1,0 +1,165 @@
+# Clean POWA! | Owner Decision Log
+
+**This file is the highest authority for game rules.** Where a decision recorded here disagrees with anything in `Clean_POWA_Reviewer_Handoff/` (the master handoff, the original source files, the balance workbook, or the CSV data tables), **this file wins**. The handoff files are kept untouched as historical source material; they are not edited to match these decisions.
+
+Decision IDs (Dxx) match `Clean_POWA_Reviewer_Handoff/03_Review_and_Decisions/Open_Decisions_and_Reviewer_Questions.md`. Each entry records what was decided, which source data it overrides, and a test that proves the implementation follows it.
+
+Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
+
+## Confirmed decisions
+
+### D01: Demo upgrade roster (confirmed 2026-10-25)
+**Decision:** The demo includes all nine upgrades: Extra Scrubbers, Clip Size, WAX, Retractable Bristles, Time Manipulation, Reload Speed, Scrubbing Speed, Brush POWA Level, Brush Size.
+**Overrides:** BALANCE `Upgrade definitions` column `DEMO/FULL` (and `04_Data_Tables/Upgrade_definitions.csv`), which labels every upgrade `FULL`. Treat all nine as `DEMO`. Also supersedes PENDING item 1.
+**Test:** The demo upgrade screen lists exactly these nine upgrades, and the game's config agrees.
+
+### D22: What a Wax tier purchase gives (confirmed 2026-10-25)
+**Decision:** Wax tiers are repeatable charge packs, not sequential unlocks. On any upgrade screen the player may buy any pack, any number of times, as long as they can afford it: L1 = +1 charge for 5 POWA, L2 = +2 charges for 8, L3 = +3 charges for 10. Purchased charges add to the player's stock. No unlock order, no maintenance. Charges never recharge and carry over across days and maps (unchanged from RULES).
+**Overrides:** The "levels are unlocked sequentially" rule (GDD/master handoff §8) does not apply to Wax. BALANCE `Upgrade Levels` WAX rows are read as pack sizes and pack prices, not levels.
+**Test:** Starting with 0 charges and 30 POWA, buy L3 then L1 (cost 15, stock 4). Use 1 Wax during the day (stock 3). On the next upgrade screen buy L2 (stock 5). L3 can be bought again without any unlock step.
+
+### D02: POWA ledger (confirmed 2026-10-25)
+**Decision (owner's words, structured):**
+1. Banked POWA starts at 0 at the start of the game. Day 1 is free.
+2. At the end of each night, POWAIN is calculated from panel cleanliness (BALANCE `POWA conversion`) and added to Banked POWA.
+3. On the upgrade/loadout screen the player spends Banked POWA to unlock upgrade tiers (one-time cost, deducted immediately) and chooses which unlocked tiers to equip.
+4. The **GET SCRUBBIN!** button is the "go to next day" button. It shows the day cost = 5 POWA + maintenance of the currently selected loadout. Pressing it deducts that cost from Banked POWA and starts the next day.
+5. If Banked POWA is less than the day cost, GET SCRUBBIN! is shown **red** and cannot be pressed (the player must unequip upgrades or use TRY AGAIN).
+6. An unlock purchase is refused if, after paying, Banked POWA would be less than 5 + maintenance of the currently selected loadout (shows the `MUST RETAIN` message). Equipping a more expensive loadout is always allowed; it may turn GET SCRUBBIN! red.
+**Overrides:** GDD/RULES/master handoff §7 wording `BANKED = POWAIN - POWAOUT` and the literal "must retain +5 POWA" purchase floor (now 5 + selected maintenance). Supersedes PENDING item 2.
+**Not yet decided:** what the Score screen's `POWAOUT` line shows (cost of the day just played vs. nothing). Settle with UI work.
+**Test:** Day 1 free, scores 6 POWAIN → bank 6. Unlock Reload Speed L1 (cost 5) is refused (6 − 5 = 1 < 5). Bank 6, nothing equipped → GET SCRUBBIN! shows 5, press → bank 1. Night 2 scores 12 → bank 13. Unlock Reload L1 (5) → bank 8; equip it → day cost 7, press → bank 1. With bank 4 after a bad night, GET SCRUBBIN! is red.
+
+### D03: Fractional POWA (confirmed 2026-10-25)
+**Decision:** Banked POWA is always a whole number. Each night, sum the per-panel POWAIN values (which may include halves), then **round the night's total down** to a whole number before adding it to the bank. Per-panel conversion values (0.5, 1, 1.5, 2) are unchanged; rounding happens once per scoring event, on the total.
+**Overrides:** Nothing in BALANCE `POWA conversion` changes; this fixes the conflict with RULES "Banked POWA is an integer". Supersedes PENDING item 3.
+**Test:** Panels at +1, +3, +4 → 0.5 + 1.5 + 2 = 4.0 → +4. Panels at +1, +1, +1 → 1.5 → +1. A single +1 panel → 0.5 → +0. The Score screen shows the rounded POWAIN.
+
+### D04: When recharge timers run (confirmed 2026-10-25)
+**Decision:** The Scrub and Reload timers run whenever their bank is below its max. When a timer completes and the bank is still below max, the next cycle starts immediately. When the bank is full, the timer stops and resets to its full duration. Banks start full at the start of their phase (unchanged); pause freezes timers.
+**Overrides:** GDD `SCRUB/SHOOT COUNTER BANK` and RULES Night wording that timers start only at 0. Supersedes PENDING item 4.
+**Test:** Max 4, Scrub timer 3 s. Use 2 counters at t=0 (bank 2) → bank 3 at t=3, 4 at t=6, timer stopped. Max 1: use the counter at t=0 → bank 1 at t=3.
+
+### D05: Counters per timer completion (confirmed 2026-10-25)
+**Decision:** Each completed timer adds exactly **+1** counter, never above the bank's max. Extra Scrubbers and Clip Size raise only the max.
+**Overrides:** BALANCE `Upgrade definitions` wording "increases the number of counters provided when timer reaches 0". Supersedes PENDING item 5.
+**Test:** Clip Size L3 (max 4). Timer completes with 0, 1 and 3 stored → 1, 2 and 4 stored.
+
+### D06: Mud Boy forward movement (confirmed 2026-10-25)
+**Decision:** Each forward action moves a Mud Boy **1 panel** toward its destination edge, every 3 seconds.
+**Overrides:** ENEMY pp. 1 and 3 "forward 2 spaces/panels". Supersedes PENDING item 6.
+**Test:** A Mud Boy spawning at bottom-edge P(4,9) on Map 1 is at P(4,8) after 3 s, P(4,7) after 6 s, P(4,6) after 9 s, and each of those panels gets one -1 event.
+
+### D20: Skipped panel on a 2-panel move (resolved by D06, 2026-10-25)
+**Decision:** Not applicable; Mud Boys move 1 panel, so no panel is skipped.
+
+### D07: Mud Boy health (confirmed 2026-10-25)
+**Decision:** Mud Boy HP comes from BALANCE `Mud boy Waves` column `Health counters` for the current day (3, 6 or 9).
+**Overrides:** ENEMY opening sentence "Each Mud Boy has 3 health counters". Supersedes PENDING item 7.
+**Test:** On a day whose table row lists 9 HP, a Mud Boy survives 8 default shots and pops on the 9th.
+
+### D10: Forward move into an occupied panel (confirmed 2026-10-25)
+**Decision:** The moving Mud Boy **pushes** the occupant forward 1 panel, then moves into the freed panel. Pushes chain: if the occupant's new panel is also occupied, that Mud Boy is pushed first (resolve from the front of the chain backward). Every panel a Mud Boy enters by a forward move or forward push gets the normal -1 dirt (Wax still protects). A Mud Boy pushed off its destination edge is treated exactly as if it reached that edge by itself (pop). Two Mud Boys never share a panel.
+**Derived details (flag if wrong):** being pushed does not reset or use up the pushed Mud Boy's own 3 s action timer; a push does not cost or change HP.
+**Overrides:** Fills the gap in ENEMY (only backward collision was specified). Supersedes PENDING item 10.
+**Test:** Bottom→top wave on Map 1. A at P(3,5), B at P(3,6). B's action fires: A is pushed to P(3,4) (-1), B moves to P(3,5) (-1). Final state has no shared panel. With A at P(3,0) and B at P(3,1): A is pushed past the top edge and is resolved by the reach-the-edge rule; B moves to P(3,0) (-1).
+
+### D11: Clearing the screen with waves still queued (confirmed 2026-10-25)
+**Decision:** When no Mud Boys are active but waves remain queued tonight, the **next queued wave spawns immediately**; later waves keep their spacing relative to that new spawn. The night ends early only when every scheduled wave has spawned and been defeated; otherwise it ends when the 45 s Night timer reaches 0. Queued waves are never silently skipped while the timer runs.
+**Overrides:** GDD/ENEMY "night ends when no enemies are active" (now: no enemies active **and** none queued). Supersedes PENDING item 11.
+**Test:** Three-wave night. Kill wave 1 two seconds after it spawns → wave 2 spawns at once. Kill wave 2 → wave 3 at once. Kill wave 3 → night ends immediately, before 45 s.
+
+### D12: Night start timing (confirmed 2026-10-25)
+**Decision:** On entering night, the `HERE THEY COME!` warning shows for **2 s** with the Night clock paused. The 45 s Night clock then starts; wave 1 spawns at **t = 2 s** on the Night clock, and later waves follow every 6 s (t = 8, 14, …) unless D11 brings one forward.
+**Overrides:** RULES night sequence and GDD/UI Night overview wording that the first wave spawns as the clock starts. Supersedes PENDING item 12.
+**Test:** Warning 0–2 s real time, clock starts at 2 s, wave 1 at clock t=2, wave 2 at t=8, wave 3 at t=14 with no kills.
+
+### D13: What TRY AGAIN restores (confirmed 2026-10-25)
+**Decision:** TRY AGAIN restores the **map-arrival checkpoint**: the full state as it was when the player arrived at the current map (Banked POWA, unlocked tiers, equipped loadout, Wax stock, day number), with the map reset to its starting cleanliness, then shows that map's upgrade screen as it was on arrival. On Map 1 the checkpoint is the fresh game (Day 1, 0 POWA, free first day).
+**Overrides:** GDD "full Day 1 reset" and "last-day rollback" wording; MAPS p. 6 "or preceding day". Adopts the RULES map-start checkpoint as canonical. Supersedes PENDING item 13.
+**Test:** Arrive at Map 2 on day 14 with 20 POWA, Reload L2 and 2 Wax. Play to day 18, get stranded. TRY AGAIN → day 14, 20 POWA, Reload L2, 2 Wax, Map 2 dirty. Repeating TRY AGAIN gives the same state every time.
+
+### D15: Victory check cadence (confirmed 2026-10-25)
+**Decision:** Map victory (every panel rated +4) is checked **immediately after each Scrubby move resolves its cleaning**, and triggers at most once per map.
+**Overrides:** MAPS end-of-day fallback. Supersedes PENDING item 15.
+**Test:** Last panel reaches +4 with 30 s of Daylight left → victory triggers on that move, once.
+
+### D23: Instant mid-day victory payout (confirmed 2026-10-25)
+**Decision:** On victory, all clocks stop and the night is **skipped** (no Mud Boys spawn). POWAIN is credited **once** for the fully clean map (200 on Map 1, 1,250 on Map 2, per `POWA conversion`), the Score screen shows it, then the victory overlay with `NEXT MAP` (or the end-of-demo screen after Map 2).
+**Overrides:** GDD usual "POWAIN at end of night" for this case only. Supersedes PENDING item 15's payout question.
+**Test:** Final scrub on Map 1 → exactly one +200 credit, no night, no stale Mud Boy timers, next map's upgrade screen shows the new bank.
+
+### D25: Spawn-panel dirt (confirmed 2026-10-25)
+**Decision:** A Mud Boy applies -1 to its spawn panel's 16 tiles **immediately when it spawns** (Wax still protects), regardless of what happens to it afterward.
+**Overrides:** ENEMY p. 1 "if it remains without being shot and moved backward". Matches GDD/UI.
+**Test:** Spawn → shot off-map instantly → exactly one -1 dirt event, on the spawn panel.
+
+### D08: Mud Boys per wave (confirmed 2026-10-25)
+**Decision:** Each wave spawns the BALANCE `Mud boy Waves` `Mud boy count` for that day (3–6); nightly total = count × `wave count`.
+**Overrides:** ENEMY p. 2 "waves of 3". Supersedes PENDING item 8.
+**Test:** A day listing count 5, waves 2 spawns 10 Mud Boys in two waves of 5.
+
+### D09: Same-wave spawn uniqueness (confirmed 2026-10-25)
+**Decision:** Every Mud Boy in a wave spawns on a **different panel along the spawn edge**, chosen at random without repeats.
+**Overrides:** ENEMY p. 3 "cannot share a row or column" (impossible on one edge). Supersedes PENDING item 9.
+**Test:** Six Mud Boys on Map 1's 10-panel bottom edge occupy six distinct bottom-row panels.
+
+### D16: Demo spawn edges (confirmed 2026-10-25)
+**Decision:** Demo Mud Boys spawn only from the **bottom, left and right** edges (per the wave table). No top spawns, because the turret sits above the map. A top edge is a possible full-release feature only.
+**Overrides:** ENEMY opening "one of four edges". Supersedes PENDING item 16.
+**Test:** No demo day ever spawns a Mud Boy on the top edge.
+
+### D21: Days 91 and later (confirmed 2026-10-25)
+**Decision:** Every day after 90 uses the BALANCE `Mud boy Waves` **`>90` row**: bottom → top, 4 Mud Boys, 9 HP, 3 waves.
+**Overrides:** ENEMY prose "reuse day 90 conditions" (day 90 is right → left).
+**Test:** Lookup for day 90 → right→left; day 91 and day 120 → bottom→top, 4, 9 HP, 3 waves.
+
+### D14: When the day number increments (confirmed 2026-10-25)
+**Decision:** The day number increments when **GET SCRUBBIN!** is pressed and paid. Score and upgrade screens show the day just played. The night uses the wave-table row for the current day number.
+**Overrides:** GDD screen sequence "after Score/Continue increments". Supersedes PENDING item 14.
+**Test:** Play day 3, score, upgrade screen shows day 3, press GET SCRUBBIN! → day 4, and night 4 uses row 4. TRY AGAIN to a map checkpoint restores its day number with no skipped numbers.
+
+### D17: Canonical timer source (confirmed 2026-10-25)
+**Decision:** BALANCE `Timers` sheet (`04_Data_Tables/Timers.csv`) is the authority for default timer values (Scrub 3 s, Shoot/Reload 3 s, Daylight 70 s, Night 45 s); the game's config is generated from or kept identical to it. The missing "Timer V2" document is retired.
+**Overrides:** GDD references to "timer v2". Supersedes PENDING item 17.
+**Test:** One config source drives HUD, defaults and tests; changing it in one place changes all three.
+
+### D18: Starting POWA (confirmed 2026-10-25)
+**Decision:** Banked POWA starts at **0**. Day 1 starts free. The lightning's "5 POWA" is story flavour only and is never shown or credited.
+**Overrides:** GDD lightning "gives 5 POWA" as a gameplay value. Consistent with D02.
+**Test:** Title → START → Day 1 HUD shows 0 POWA; no charge is made to start Day 1.
+
+### D19: Fractional tile colours (confirmed 2026-10-25)
+**Decision:** Store raw tile values as decimals, clamp to [-10, +4] after each change, then **truncate toward zero** for both the tile's colour level and (for the panel average) the panel rating.
+**Overrides:** GDD/UI "rounding down" wording for colours, including any negative-specific exception.
+**Test:** Raw -0.5 → colour 0; -1.7 → -1; +0.5 → 0; +1.7 → +1. Panel average 0.625 → rating 0.
+
+### D26: Counter banks at phase changes (confirmed 2026-10-25)
+**Decision:** At the start of each day the Scrub bank is set to its max and the Scrub timer resets; at the start of each night the Shoot bank is set to its max and the Reload timer resets. Banks and timers not used in the current phase are inactive. A timer that would complete on the same frame its phase ends grants nothing. Pause freezes every timer, movement, spawn queue and animation.
+**Overrides:** Fills the gap in GDD "banks refill at start of needed phases".
+**Test:** Scrub timer at 2.9/3 s when Daylight hits 0 → no counter granted; next day starts with a full bank and a fresh 3 s timer. Bank never exceeds max.
+
+### D27: Map 2 view (confirmed 2026-10-25)
+**Decision:** Panels and sprites stay the same size on both maps. On Map 2, by day the camera follows Scrubby (clamped to the map edges); at night the view zooms out to fit the whole map so every panel and Mud Boy is visible and clickable. Map 1 fits on screen without a camera.
+**Overrides:** Fills the gap in GDD/MAPS (no viewport rule). Night-time zoom is an accepted exception to "same sprite size" for clickability.
+**Test:** On Map 2 Scrubby can reach P(24,24) by day with the camera following; at night a Mud Boy on any edge panel can be clicked without scrolling.
+
+### D29: Tech stack and hosting (confirmed 2026-10-25)
+**Decision:** TypeScript + **Phaser** game library, built with **Vite**. Hosted on **Azure Static Web Apps** (free tier), deployed automatically from GitHub by GitHub Actions. Balance values are loaded from config generated from / matching `04_Data_Tables/`. Game rules live in plain TypeScript separate from Phaser so they can be unit-tested deterministically.
+**Overrides:** Nothing (previously undecided).
+**Test:** `npm install && npm run dev` runs the game locally; a push to `main` deploys to the Static Web App; rule tests run in CI.
+
+### D24: Demo persistence (confirmed 2026-10-25)
+**Decision:** The demo keeps all state in memory only. Refreshing or closing the tab loses the run and returns to the title screen. Save/load is a full-release feature, to be designed later.
+**Overrides:** Nothing (confirms RULES).
+**Test:** Refresh mid-run → title screen, fresh game.
+
+### D28: Art and audio (confirmed 2026-10-25)
+**Decision:** The demo build starts with **placeholder art drawn in code** (simple shapes and the `colors.csv` palette) and **no audio**. The demo must be fully playable muted. Final sprites and music from the owner replace placeholders later; any third-party asset needs its licence recorded in the repo.
+**Overrides:** Nothing (previously undecided).
+**Test:** The demo runs end-to-end with no external image or sound files.
+
+## Still open
+
+- D02 detail: what the Score screen's `POWAOUT` line shows. Settle during UI work.
+- D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.

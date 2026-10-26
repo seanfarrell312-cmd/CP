@@ -1,0 +1,71 @@
+Clean POWA! - Remaining Spec Decisions After Typo Cleanup
+
+The CLEAN copies correct spelling, grammar, obvious arithmetic/transcription slips, and ChatGPT/sandbox residue. The following design contradictions were intentionally left unresolved because they require a game-design decision rather than typo correction:
+
+1. Demo upgrade roster / WAX availability
+   - Demo Game Design says the demo contains all listed upgrades except WAX.
+   - Balance workbook currently marks only some upgrades as DEMO and marks WAX as DEMO.
+
+2. POWA accounting order
+   - Some prose describes Banked POWA as a difference between POWAIN and POWAOUT.
+   - Other sections add POWAIN to Banked POWA, then spend POWA later.
+
+3. Banked POWA integer vs. 0.5 increments
+   - Rules text calls Banked POWA an integer.
+   - POWA conversion awards 0.5 increments.
+
+4. Counter recharge trigger
+   - Some sections say Scrub/Shoot recharge begins only at 0 counters.
+   - Other sections say it runs whenever the bank is below maximum.
+
+5. Extra Scrubbers / Clip Size behavior
+   - The design text says each timer completion grants +1 counter.
+   - Workbook descriptions can be read as higher levels granting multiple counters per completion.
+
+6. Mud Boy forward movement distance
+   - Demo/UI prose says 1 Panel every 3 seconds.
+   - Enemy specification says 2 Panels every 3 seconds.
+
+7. Mud Boy health
+   - Enemy prose initially says 3 HP.
+   - Wave table defines 3, 6, or 9 HP depending on day.
+
+8. Mud Boy wave terminology
+   - Enemy prose says waves of 3.
+   - Wave table supports 3-6 Mud Boys per wave and 1-3 waves.
+
+9. Same-wave spawn restriction
+   - One rule says Mud Boys in a wave cannot share a row or column.
+   - This conflicts with edge spawning, where bottom spawns necessarily share a row and side spawns share a column.
+
+10. Forward collision between Mud Boys
+    - Backward collision is defined.
+    - Normal forward movement into an occupied Panel is not defined.
+
+11. Night completion with queued waves
+    - Night can end when all active Mud Boys are defeated.
+    - Multiple later waves may still be scheduled.
+
+12. First-wave timing
+    - Some sections spawn the first wave immediately after the warning.
+    - Another section specifies a 2-second delay.
+
+13. TRY AGAIN behavior
+    - Different sections describe a full restart, previous-day rollback, or current-map-start rollback.
+
+14. Day counter increment timing
+    - One section increments after Score/Continue.
+    - Another increments when GET SCRUBBIN successfully starts the next day.
+
+15. Victory check timing
+    - Some sections describe immediate/continuous victory.
+    - Maps specification leaves an end-of-day fallback.
+
+16. Demo Mud Boy spawn edges
+    - Enemy opening says four edges.
+    - Later demo rules say only bottom/left/right are used because the turret occupies the top.
+
+17. Timer V2 reference
+    - Demo Game Design references a Timer V2 document that is not in the consolidated set. Decide whether the Balance Workbook Timers tab should become the canonical replacement.
+
+These items should be resolved once, then applied to the CLEAN copies rather than continuing to patch the older drafts.

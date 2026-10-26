@@ -1,0 +1,302 @@
+Demo Game Design specification:
+
+Game Start Story Synopsis
+You are Scrubby! an automated cleaning unit for the POWA corporation. a lightning bolt strikes your dormant POWA plant and provides 5 POWA. This brings scrubby to life an allows him to start scrubbing!
+
+You are in charge of cleaning filth off of solar panel at the POWA plant.
+
+Scrub the solar panels clean to generate POWA!
+
+Use your time wisely to clean as much as you can before those pesky Mud Boys drop by to spread their dirt all over the place.
+______________________
+
+Day cycle:
+
+The first day starts when you move.
+
+the daylight counter probably needs to be set to 70 seconds to allow for 2 extra scrub actions. The game is supposed to be a slight rhythm game so the first level might need to be played perfectly in order to teach the player exactly what the expectation is during the day, but without the catchy music or dancing sprites it may just seem too hard.
+To make the game more friendly, the initial day timer should be set to 70 seconds.
+
+you are presented with a layout screen. You see your current amount of POWA counters as well as upgrades available. upgrades display initially as available for purchase. The upgrades are shown in a list with a set of buttons next to them. Each button represents a specific upgrade at a specific level.
+The initial cost of the upgrade is shown on each button. When selected, the amount of POWA depicted on the button is deducted from your total available POWA counters.
+Player sees a screen with a start button. Once they click the start button they will see the first map with the player character located at the top-leftmost panel.
+
+The player will see the map and the timer bar above it.
+
+The player starts with default scrub token, default shoot token, the default scrubbing timer and default shoot timer.
+
+The player character occupies one Panel at a time. The initially occupied panel does not have its cleanliness updated. The player must select a direction to move using WASD keys.
+Since they are in the top Left most panel, pressing W or A does nothing and the day timer does not start. the player must press S or D to move the character to the right or down panel.
+After the player moves to an available space, the day timer begins counting down, the default player cleanliness is applied to tiles in the panel moved to, and the character icon will make a scrubbing motion.
+The scrub counter will decrease by 1 and the scrub timer will begin counting down.
+The tiles in the panel moved to will update their colors to reflect their current cleanliness rating based on the cleanliness applied by the player moving to it.
+If the amount of cleanliness of the tile reflects a specified value of cleanliness on the cleanliness chart, the color of the tile will be updated.
+Cleanliness is calculated by rounding the current cleanliness rating value down to the nearest whole number.
+
+To start the next day, the player must "purchase" the next day using POWA acquired after Banked POWA is applied to their current total amount of POWA counters. each day costs 5 POWA.
+POWA can be spent from your banked POWA updated at the end of each night by the Banked POWA value determined by the difference between POWAIN and POWAOUT.
+
+The story reason is that the robot costs 5 powa to start with any additional upgrades applied required further POWA to apply. The game starts when lightning strikes a POWA plant and adds 5 POWA.
+This allows for the first level to happen.
+
+The advancement process can be changed to requiring that the player purchase the right to advance to the next day by spending 5 POWA to start the day and any additional POWA to purchase or apply upgrades.
+It is more expensive to purchase upgrades the first time but once purchased they can be applied on subsequent runs using the maintenance cost.
+They can also be "disabled" or not applied even if they are purchased to not apply their COST to the total POWA required to start the next DAY.
+
+The game over condition can be removed and there will be a 'Try again' option provided If the player cannot purchase another day by spending at least 5 POWA.
+If they select the "Try Again" button, the map and upgrades will reset and The player will be returned to Day 1.
+
+During the day phase while the daylight timer is decreasing the player cannot choose to end the day early. The demo will not have a feature to do this but The full version may.
+
+Each day after the initial day The player will see the Upgrade/Next day screen displaying the player's current amount of POWA counters as 'POWA', the list of available upgrades that can be purchased, enabled, or disabled, and at the bottom of the page is a start button with the current cost of starting the next day displayed inside of a button with the Text 'GET SCRUBBIN!'.
+If the player has sufficient POWA to purchase the start of the next day, the amount of POWA shown in the button will display in green.
+If the player does not have enough POWA to purchase the next day, the amount of POWA shown in the button will display in red.
+
+__________________________
+
+The DEMO will contain all upgrades and features including WAX and retractible bristles but only 2 maps. Later maps can appear in the configuration files.The full version will contain 4 maps.
+Map 3 will be a Plus shape and Map 4 will be more rounded.The expected gameplay time of the demo can range from 30 to 90 minutes to complete the entire game depending on the level of gaming.
+There is no expected gameplay time established for each map as the game will accelerate based on the player's decisions and purchased upgrades.
+Expected gameplay time of the full game is not yet determined.
+
+_____________
+
+The Night Phase Description:
+
+When the Daylight timer runs out the Player is removed from the game map and the turret appears at the top of the Map in the margin between the top bar with the timers and the topmost row of Panels on the current Map.
+The player will see a Message stating "Incoming Mud Boys!" flash over the map for a moment then disappear.
+After the message disappears, the first Mud Boy wave will start and the Night timer will begin counting down. The night phase will end when the night timer reaches 0 or if all Mud Boys have been defeated by either popping or by being pushed off the map. The first of these conditions to occur will trigger the end of the night phase.
+
+
+_____________________
+
+Screen Sequence and Game flow:
+The game starts with a Title Screen displaying the title of the Game "Clean POWA!" and underneath it the text " a game by seanologues ".
+At the bottom of the title screen there should be two buttons: one that says START and another that says OPTIONS. The OPTIONS button will allow the player to adjust the music volume. The demo will not have an enabled Options button.
+
+In the demo hitting start will start the game from the first day, showing the player character on the map and displaying the default game screen.
+In The full version, once the player hits the start button a small comic will display, showing lightning hitting the power plant and bringing Scrubby online. the player can hit a Next button that appears at the bottom of the comic to advance to the first-day setup.
+
+The default game screen will show the timer bar up top displaying the counters for scrubbing, shooting, current expected POWAIN and the Daylight timer. Under the timer bar will be the game map. The map will reflect the current level the player has advanced to. The player starts on Map 1.
+The map panels should be centered on the screen allowing room in the margins for background and for a noticeable difference when a later map is advanced to.
+There will also be a Pause option that will display a screen with an options button and a resume button.
+When the pause screen is displayed, all timers are paused and the gamestate is put on hold until the resume button is pressed.
+When the Resume button is pressed, the pause screen will disappear. In the demo the options button is disabled.
+
+Once the Day timer reaches 0 the day phase ends and the night phase begins. The night phase will proceed until the night timer reaches 0 or all Mud Boys have been popped or pushed off the map. once the night phase ends The player will be presented with the scoring page. The player will see the values for POWAIN, POWAOUT, and BANKED POWA for the session. There will be a continue button displayed at the bottom of the scoring screen. hitting Continue will advance the player to the Start screen for the next day.
+After hitting continue the Day counters will increase by 1 and the scoring page disappears. The player will then be presented with the Upgrade/Next day screen.
+After the player manages their upgrades and selects the The "Get SCRUBBIN!" button by spending the amount of affordable POWA displayed on the button, the Upgrade/Next day screen disappears and the player is returned to the default game screen. In the demo, the player character will be placed on the last occupied panel that they were at when the daylight timer reached 0 in the previous day phase. In The full version there may be an option to place the character onto a new spot on the current map by spending POWA.The farther the space selected is from the last occupied space that the player was located at in the last day phase, the more POWA it will cost to deploy. The player will see an outline of the position they will start in if they do not select a new space or cannot afford to start in a new space. They can select the outline of the character on their previously occupied space to opt out of the new starting space in the new day phase to continued the game from where they left off.
+
+The player will see a message that reads as a 3 second countdown. as each second passes the message will read "READY" then "SET" then "SCRUB!" The text for each message will remain on the screen for 1 second then disappear. The games music will start and the daylight timer will begin.
+The player will then be able to make movement choices by pressing the WASD keys and consuming Scrub counters until the daylight timer reaches 0 and the next night phase occurs.
+
+The game loops in the fashion until the game map has a maximum cleanliness value as defined by the map's total number of panels.
+Once this occurs the day timer will pause and the Player will see a Message screen appear over the map saying "Great Job!" there is a button on the new screen that says "NEXT MAP". selecting this will move the player to the next map.
+ the new map will start with the default cleanliness value and the player character will be set on the top-leftmost panel.
+The player will see the Upgrade/Next day screen on the first day phase of a new map instead of the initial day process that they experience with the first maps' first day. The player will have the opportunity to spend their POWA on upgrades and purchase the start of the next day on the new Map. in the demo the player character will start on the top left panel of the new map. in The full version they will be able to select where they will start on the map by spending POWA or selecting the default location for free.
+
+the map will continue in the same way with each complete Day/Night phase increasing the day counter by 1 until the entire map 2 reaches the maximum cleanliness. Once this happens, regardless of the time left on the daylight timer, the all timers will pause and The player will see a screen saying "you have completed the game!" there will be a button on the screen with a Play again option that will return the player ot the start screen and reset all of their upgrades, day counters, POWA, and cleanliness of the map to its default values and a new game will start.
+
+_________________________________
+Pause menu:
+The player can pause the game at any time by clicking the pause button in the menu bar. The paused game screen will show a pause menu that appears in front of the currently active game map. The pause menu will show a message stating ‘PAUSED’ followed by 3 buttons reading RESUME, OPTIONS, EXIT. When the game is paused by the player clicking on the pause button displayed in the Timer bar, all timers are halted at whatever time they currently display, all in-progress actions should be paused, including Mud Boy movements after being selected from a shot or forward movement after their timers are up, or spawning of new Mud Boys if there are additional waves queued. The timers and actions should resume in the same position and continue with their intended trajectory once the pause menu is exited. When the pause menu is exited by selecting the Resume option, the pause menu will disappear from the front of the map. If the player selects EXIT from the pause menu, then the game state should revert to the default starting setup and begin again at day 1. The player will be moved to the Initial Start screen.
+
+The player moves from Panel to Panel on the map. The change to cleanliness is applied to tiles within the panel. Panel cleanliness rating is determined by referencing the tiles cleanliness rating within the panel.
+
+Map 2 will have an identical coordinate system as Map 1 but be extended to account for a 25 by 25 grid of panels each containing a 4 by 4 tile. The top-leftmost tile will be P(0,0) T(0,0) and the bottom-rightmost tile will be P(24,24) T(99,99) for a total of 625 panels and 10,000 tiles. Map 2 will start with start with the same initial cleanliness rating as Map 1. Each tile will start with an initial cleanliness rating of 0. The minimum cleanliness value for a panel and tile in Map 2 is -10. The Maximum cleanliness value for a panel and tile in Map 2 is +4.
+
+Cleanliness is determined from a panel by taking the average of the cleanliness rating for the tiles within them rounded down to the nearest whole number. For negative integers the cleanliness rating is determined by rounding up to the nearest whole number.
+
+
+In the demo all maps will start with an initial level of cleanliness that is uniform at the start of each level. The cleanliness can be increased up to the maximum or decreased down to the minimum based on actions taken by the player or by action taken by Mud Boys during a night phase. In the full release, will use the same initial cleanliness setting for Map 1 but Map 2 will contain increased “spots” of lowered cleanliness in its initial cleanliness values.
+
+
+Mud Boys will spawn in a random panel on the margin determined by the day counter and the Mud Boy spawn table. Once they appear on the map they immediately impact the cleanliness of the tiles in whichever panel they currently occupy by -1.
+They will remain in the same location for 3 seconds then move in the direction of the opposite margin. They will advance 1 panel forward. When they enter a new panel they will immediately impact the cleanliness of the tiles in whichever panel they move to by -1. The Mud Boys will not appear on the map until they spawn.
+
+When the player clicks on a Mud Boy during the night they will expend Shoot counters. If a shoot counter is expended then the Mud Boys will move backwards towards the margin that they spawned from based on the day counter as shown in the Mud Boy spawn table. Cleanliness is only affected by Mud Boys when they move “forward” or “pop”. If the Mud Boy selected is moved back beyond the boundaries of the map, they are defeated and disappear. If they are moved back to a panel within the boundaries of the map, that panel’s tiles do not receive a cleanliness decrease. If Mud Boys are shot enough times to reduce their HP to zero and they have not been moved off the map, they will pop in which ever panel they are clicked on that they reach 0 or less health in. When this occurs cleanliness is applied to the tiles in the panel they currently occupy as well as adjacent panels based on the cleanliness tables.
+
+
+__________________________________________
+
+Cleanliness application order:
+Cleanliness is applied to tiles with either a player action or Mud Boy moving into or popping near panels containing tiles.
+Tile value is calculated based on area of effect of action performed.
+Tile color is determined by their cleanliness rating rounded down to the nearest whole number for positive values and rounded up to the nearest whole number for negative values.
+Specific Panel cleanliness rating is calculated by the average cleanliness rating of all tiles within that panel rounded down to the nearest whole number for positive values and rounded up to the nearest whole number for negative values.
+Panel cleanliness is not displayed to the player as a numeric value but rather as they move around the map they will see the tiles within the panel change color.
+
+The panels cleanliness rating is calculated after a night cycle ends to determine POWAIN. Panel cleanliness is documented and tracked for each panel as changes occur throughout the game in order to test if the victory condition has been met.
+
+In the demo version when a panel is updated to cleanliness level 4, the color of the tiles within it will reflect the appropriate color and no message appears to the player.
+
+The full version, scrubbing a panel enough times to get it to cleanliness 4 results in a message appearing above the map showing ‘WOO!’ or ‘YAY!’
+
+The timer v2 document is the canonical source for the timers colors and default times.
+
+________________
+
+Terms for counters:
+
+SCRUB COUNTER BANK:
+The amount of scrub counters currently available for the user to spend on movement/scrub actions.
+SCRUB COUNTER BANK can be updated when the scrub timer reaches 0.
+When the number of counters in the SCRUB COUNTER BANK reaches 0, the scrub timer starts at the current enabled time amount based on the applied upgrades to the scrub timer or the default if none are applied/equipped.
+
+SHOOT COUNTER BANK:
+The amount of shoot counters currently available for the user to spend on shoot actions.
+SHOOT COUNTER BANK can be updated when the shoot timer reaches 0.
+When the number of counters in the SHOOT COUNTER BANK reaches 0, the shoot timer starts at the current enabled time amount based on the applied upgrades to the shoot timer or the default if none are applied/equipped.
+
+____________________________
+
+Timer and counter relations
+The daylight timer will be 70 seconds at its default value, allowing for the player to make a few mistakes in the initial round or delay their movements, but still be able to scrub enough for the required 5 POWA to advance to the next level.
+	- NOTE of DEV: If this is too strict the values could possibly be updated later in dev.
+	- The maximum number of scrub and shoot counters in their respective banks is dependent on the Extra Scrubbers upgrade for scrub counters and the Clip Size upgrade for shoot counters.
+	 The timers begin counting down immediately if the total number of shoot or scrub counters available drops below the maximum allowed based on currently purchased and equipped upgrades. Once a timer reaches 0, a counter is added to the respective bank and the timer then resets to its full value.
+	- if the counter bank is full after added counters are applied, the associated timer will reset to its max time like it always does based on the currently equipped upgrades, but will not start counting down. Once the number of counters drops below the maximum value in the bank, the timer will start again.
+	- counters cannot be granted in excess of the maximum number currently upgraded to and equipped. If an addition of counters once a timer reaches 0 is applied to a counter bank that would cause the bank to be more than its maximum, then the bank is raised only to the maximum level allowed by current upgrades equipped and the remained extra counters are not earned.
+	- The scrub and shoot timers and counter banks are reset at the beginning of each of their needed phases. The bank starts with a full number of counters at the beginning of the phase. unused counters are not carried over to the next phases.
+	- the scrub counters can only increase by a value of +1 for every completion of the scrub timer.
+	- the shoot counters can only increase by a value of +1 for every completion of the shoot timer.
+	- the day timer starts full at the beginning of each day phase and only starts counting down after the 'ready set go' message. on day 1 of the game the timer starts once the player makes their first move.
+	- The night timer starts after the 'hear they come' message and the first mudboy wave appears.
+	- The delay between Mud Boy waves determines the number of seconds that must pass after the spawning of the first wave before the second wave spawns on the map.
+	- the delay between Mud Boy waves is set at 6 seconds. for all variations of waves on all days. The first wave will spawn 2 seconds after the message ends and the night timer starts. The second wave will spawn 6 seconds later. the third will be 6 seconds after that, etc
+
+_________________
+
+Upgrade levels must be purchased sequentially.
+Every upgrade has an initial cost and a maintenance cost. The initial costs specified in the upgrade table are not cumulative and only need to be paid once per level to Purchase or unlock the upgrade to be equipped for a Day/Night phase. Maintenance costs are also not cumulative, but will increase as higher levels of the upgrade are purchased.
+Upgrades will be set at the last purchased level when upgraded, but can be reduced to a lower level in order to adjust the maintenance costs total to start the next round. The upgrade will appear as a slider and a toggle. the toggle will enable or disable and the slider will reflect the level of the upgrade set. by selecting a purchase button on the same row as the slider, the player can unlock new notches on the slider to move the current level selector to. the slider moves from left to right with the higher levels being located on the far right of the slider.
+- Players must spend POWA from their current banked POWA to purchase the upgrades. Once purchased, they will lose POWA counters from their banked POWA equal to the cost of the upgrade. If the cost of the upgrade would decrease their their total banked POWA to less than +5, the upgrade will not be applied and The player will see an error stating "MUST RETAIN +5 POWA."
+- Players will have the option to enable or disable the upgrade unlocked when they purchase the upgrade with the default option being Enabled as reflecting on in a toggle option in the upgrade screen. When toggled ON or enabled, The player will see the maintenance cost of the current level purchased on that upgrade added to the total cost of POWA shown on the next day button. If If that
+Maintenance charges are only applied as a cost to start the next day at the end of the upgrade phase. Only purchased upgrades toggled on are applied to the maintenance cost. The maintenance costs are added to the displayed cost to start the next day.
+Counters are granted once the timers associated with them reach 0.00 seconds. When that happens the timer resets to its full value and counter are added to the banks
+
+- Upgrades purchased persist for the life of the game session and persists between maps. The player can only reset their upgrades if they start a new game.
+- The point of the upgrades is to allow the player to address the compounding challenges of the games maps so the must persist and grow as the player moved through the game and makes progress on the maps. Map 1 allows the player to unlock enough upgrades to address the challenge of the next map.
+- When the player moved from Map 1 to map to the number of upgrades purchased persists, but POWAIN will be reduced given the soiled state of MAP 2. The player will be able to start the first day of MAP 2 with all of their upgrades but the day counter will continue to rise. The player will need to use their banked power and juggle their existing upgrades until they can get enough POWAIN in MAP 2 to unlock the remaining high level upgrades and equip them all.
+
+________________
+
+The player character is controlled with the WASD keys for movement. The WASD keys are used to move the character icon around the map during the day phase. The player character icon is removed from the map at the end of the day phase when the daylight timer reaches 0 the night phase and the panel it last occupies will be recorded as a starting point for the next started day phase.
+During the night phase, the WASD keys do nothing and the player only uses the mouse to click on Mud Boys that spawn on the map to spend
+The player character can only move when at least one scrub counter is available.
+The space bar is used to apply WAX to the currently occupied panel.
+ The player can press the space bar while the character is on a panel that has a cleanliness rating of +4 to apply WAX. WAX can only be applied to panels with no wax currently applied and with a cleanliness rating of +4.
+The color of the tiles within the panel receiving wax will change to pink.
+This will consume a WAX counter and reduce the current total number of wax counters by 1.
+Wax can only be applied when the Wax counter amount is greater than 0.
+Wax counters can only be added to the total amount of wax counters available if they are purchased with POWA during the upgrade phase after one complete Day/Night cycle.
+If the player presses the spacebar on a tile that has a cleanliness value of less that 4, no wax counters will be consumed and the colors of the tile on the currently occupied panel will not change, and the cleanliness value of the panel will not change.
+
+If there are no scrub counters available, the player must wait until the Scrub timer counts down to 0 and a Scrub counter is added to the total available scrub counters.
+After a player selects to move in a cardinal direction using the WASD keys, a scrub counter is removed.
+Every move depletes the scrub counter total by 1 unless the retractable bristles upgrade is purchased and applied.
+if there are no counters present then the player cannot move to a new panel and applied cleanliness to the tiles therein.
+The player CAN move to a new panel if there are no scrub counters available to spend if they have the retractable bristles upgrade purchased, enabled, and are moving to a panel with cleanliness of +4.
+
+Keys cannot be held down to repeat motion and must be pressed continuously to make movement or wax selections.
+
+Every movement normally consumes a counter. Retractable Bristles makes movement onto +4 panels free.
+
+panel cleanliness is checked before and after every move action for the panels that the player selects to move to. If the player has the retractable bristles upgrade purchased and applied/equipped, and the panel that the player is moving to is evaluated to have cleanliness of +4, the no scrubbing counter should be spent and The player will move to the panel anyway.
+If the panel has a cleanliness rating of +4, then the tiles within the panel receive no update to their cleanliness rating If the player moves to that panel from an adjacent one.
+
+The rating check for a panel should occur after the player makes a movement selection. The panels current cleanliness value is calculated by taking an average numeric value of the tiles within the panel rounded down to the nearest whole number.
+Example:{
+sum of tiles cleanliness ratings in Panel P(0,0) is = 8
+number of tiles per panel is 16
+The average panel cleanliness determined for POWA calculation for P(0,0) is current total divided by number of tiles.
+8/16 =.5
+The specific Panel cleanliness rating valued at this time to be 0.
+}
+_____________________________________
+
+
+Initial idea for tracking cleanliness is to plot out the tiles and panels into 2 tables. Panel table and tile table. Each map would have a panel and tile table associated with it. Actions on the map that update the cleanliness of tiles would be recorded in the tile table and once conditions in the tile table are appropriate, they panel table would then update. this would allow for a constant checking of map cleanliness as the game progresses to accommodate the victory condition being met for any map even if there is time left on the day timer.
+
+______________________________
+After determining the base value of the base value of the panels cleanliness and checking if retractable bristles is enabled, the player's currently set Brush POWA is applied to the cleanliness rating of the tiles in the panel.
+If the cleanliness is applied in the default pattern to the tiles in the panel unless Brush size upgrade is purchased and applied.
+
+Once a movement direction is selected, the player character icon will be moved to the panel in the direction of the WASD key pressed.
+The tiles in the panel the player icon moves to will update their color based on their newly evaluated cleanliness rating based on the cleanliness rating they are updated to once the player spends a scrub counter to move to the panel they are contained in. The tile cleanliness in any panel cannot exceed +4.
+
+The Daylight timer begins counting down as soon as the player makes their first move selection or presses spacebar. The spacebar selection will only start the daylight timer if WAX is successfully applied, otherwise no action will be taken.
+
+If the player is on a map edge and elects to move in the direction where there is no panel available, no movement will occur and no scrub counters will be spent.
+
+Day phases other than the first day start after the player moves through the upgrade screen and purchases the next day using POWA. After they purchase the new day and their POWA counters are adjusted, the daylight timer will start after the READY SET scrub message.
+As soon as the ready set scrub messages disappear, The player will immediately be able to spend scrub counters available in their current Scrub counter amount. This ability to move/ spend scrub counters will happen as soon as the daylight timer starts.
+
+______________________
+
+The total cleanliness of each map must be brought to a certain level to complete the stage.
+Map one must be completely clean, which means that every panel on the map must have a cleanliness rating of +4 after evaluating the tiles within it.
+
+Once achieved, all timers will pause and The player will be notified that they have completed the stage.
+They will see a victory screen and be given the option to move on to the next MAP. MAP 1 leads to MAP 2 in the demo.
+In the full release MAP 2 once completed will lead to MAP 3.
+In the full release MAP 3 once completed will lead to MAP 4.
+In the full release MAP 4 once completed will lead to MAP 5.
+etc
+
+In the demo, After the player completes The second map, the game will be completed.
+After the victory condition for MAP 2 is met, The player will receive a message thanking them for playing.
+the screen will give them the option to return to the start menu.
+
+Map completion requirements:
+Map 1: total panel cleanliness rating of 400 cleanliness. all panels in map should be rated at +4 cleanliness
+Map 2: total panel cleanliness rating of 2500 cleanliness. all panels in map should be rated at +4 cleanliness
+
+The victory condition should be checked continuously, but if that proves to be too complex then it should be checked after every day phase ends.
+If the Map is completely clean then the player has completed the stage.
+
+There is no true failure condition, but players may get 'stuck' with an insufficient amount of banked POWA to spend on starting the next day even after disabling their equipped upgrades to remove their maintenance costs from the starting cost.
+
+If the player elects to try again they can restart the map or go back to the start of the previous day with their Banked POWA and upgrades set back to they way they were.
+
+Day count does not reset when the player moves from Map 1 to MAP 2. Days are continued and this will affect the Mud Boy waves during the night phases the player encounters.
+
+__________
+
+The number of Game maps in the demo will be 2.in The full version there may be up to 4.
+Each map will have panels in a grid.
+Each panel will contain a grid of tiles within it creating a grid for establishing cleanliness for POWA and area of effect for the player's applicable scrubbing ability.
+
+The first map is a 10 by 10 grid made of individual cells of equal size called 'Panels'.
+
+Each panel is overlaid with a 4 by 4 grid of individual cells of equal size called 'Tiles'.
+
+The initial game map should be 10 by 10 panels overlaid with 40 by 40 tiles to create the complete map.
+
+The second map will be 25 by 25 panels overlaid with 100 by 100 tiles to create the complete map.
+
+Each Panel has a cleanliness value based on the average cleanliness number of the tiles within the panel rounded down to the nearest whole number.
+
+POWA earned is determined after each Day/Night phase is completed. Each panel with a cleanliness rating above 0 will reward POWA.
+
+Map 1 has 100 total panels and 1600 total tiles
+Map 2 has 625 total panels and 10000 total tiles.
+
+The game screen is divided between the map area and the menu bar.
+The maps are centered in the game screen's map area with their innermost tiles set in the center of the map area.
+This shows that when the player moves from MAP 1 to MAP 2 then on to later later maps in The full version, they will notice the size and shape difference between the 2 maps without the size of the player character or panels shrinking.
+
+
+ For the cleanliness use truncation towards 0.
+	 Example:
+	 1.7 becomes 1
+	 0.5 becomes 0
+	 -0.5 becomes 0
+	 -1.7 becomes -1
+	 Example:
+		- a panel containing 16 tiles has 12 tiles with a cleanliness rating of +0.5 and 4 tiles with a cleanliness rating of +1. The panel cleanliness rating would be evaluated as 0. The average tile cleanliness rating would be 0.625 which would resolve to 0.
+- the tiles change colors as their cleanliness is raised or lowered based on the action taken by the player or Mud Boys.
+- the average tile cleanliness can be represented as a decimal, but always resolves as truncated towards 0.
+- panel color is not set directly but rather is displayed to the player during gameplay as the tiles color within them. This will allow panels to appear either fully clean or partially clean based on the actions the player performs. Only Tiles change color directly.
+
+

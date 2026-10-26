@@ -1,0 +1,4 @@
+﻿Panel,spot on map grid that can be moved to. contains a grid of tiles. the contained tile cleanliness is evaluated to determine panel cleanliness which is then used to determinee POWAIN after the night phase.
+Tile,spot within a panel that has cleanliness raised and lowered based on movement of the player and actions of Mud Boys. changes colors depending on cleanliness rating
+Map Edge,refers to the side of the panel grid that mud boys will appear on.
+map destination,refers to the direction that Mud Boys will move towards after appears on the map. should be directly across from the location that they spawned on.

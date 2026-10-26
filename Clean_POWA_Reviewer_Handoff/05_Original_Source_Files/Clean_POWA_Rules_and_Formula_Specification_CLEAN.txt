@@ -1,0 +1,229 @@
+Rules and Formula Specification:
+
+
+Each square or “panel” on the map grid will hold a value for Cleanliness. Panel cleanliness is evaluated by taking the average of the tiles cleanliness within the specific panel and truncating that value towards 0. Changes will only happen on whole decimal point updates rounded down to the nearest whole number. Panels to not hold color decisions but instead are evaluated for POWAIN during the scoring phase.
+WAX applied to a panel updates the colors of the tiles within the panel to pink and prevents change to cleanliness level by any action taken by player movement or Mud Boys. Only by resetting the level progress can Wax be removed from a panel. WAX keeps a panel’s tile cleanliness at +4 which locks panel cleanliness as +4. The color change only occurs when WAX is applied by the player pressing the spacebar and expending a WAX token purchased during a level start upgrade session before a new day phase begins.
+
+
+For the cleanliness use truncation towards 0.
+Example:
+1.7 becomes 1
+0.5 becomes 0
+-0.5 becomes 0
+-1.7 becomes -1
+Example:
+- a panel containing 16 tiles has 12 tiles with a cleanliness rating of +0.5 and 4 tiles with a cleanliness rating of +1. The panel cleanliness rating would be evaluated as 0. The average tile cleanliness rating would be 0.625 which would resolve to 0.
+•	The tiles change colors as their cleanliness is raised or lowered based on the action taken by the player or Mud Boys.
+The tiles change colors as their cleanliness is raised or lowered based on the action taken by the player or Mud Boys.
+•	The average tile cleanliness can be represented as a decimal but always resolves as truncated towards 0.
+•	Panel color is not set directly but rather is displayed to the player during gameplay as the tiles color within them. This will allow panels to appear either fully clean or partially clean based on the actions the player performs. Only Tiles change color directly.
+
+
+| Cleanliness | RGB | Hex | Visual meaning |
+| ----------: | ------------------- | --------- | ---------------- |
+| **+4** | `rgb(91, 194, 231)` | `#5BC2E7` | Zima Blue |
+| **+3** | `rgb(89, 182, 206)` | `#59B6CE` | Clear blue |
+| **+2** | `rgb(86, 170, 181)` | `#56AAB5` | Clean aqua |
+| **+1** | `rgb(84, 157, 155)` | `#549D9B` | Faded teal |
+| **0** | `rgb(82, 145, 130)` | `#529182` | Neutral clean |
+| **-1** | `rgb(93, 131, 110)` | `#5D836E` | Dingy green |
+| **-2** | `rgb(104, 116, 89)` | `#687459` | Grimy olive |
+| **-3** | `rgb(115, 102, 69)` | `#736645` | Dirty umber |
+| **-4** | `rgb(126, 88, 48)` | `#7E5830` | Mud brown |
+| **-5** | `rgb(111, 77, 42)` | `#6F4D2A` | Heavy mud |
+| **-6** | `rgb(95, 65, 36)` | `#5F4124` | Dark mud |
+| **-7** | `rgb(80, 54, 30)` | `#50361E` | Caked dirt |
+| **-8** | `rgb(65, 43, 24)` | `#412B18` | Deep grime |
+| **-9** | `rgb(49, 31, 18)` | `#311F12` | Near-black brown |
+| **-10** | `rgb(34, 20, 12)` | `#22140C` | Very dark brown |
+
+Javascript:
+const cleanlinessColors = {
+ 4: { rgb: [91, 194, 231], hex: "#5BC2E7" },
+ 3: { rgb: [89, 182, 206], hex: "#59B6CE" },
+ 2: { rgb: [86, 170, 181], hex: "#56AAB5" },
+ 1: { rgb: [84, 157, 155], hex: "#549D9B" },
+ 0: { rgb: [82, 145, 130], hex: "#529182" },
+ "-1": { rgb: [93, 131, 110], hex: "#5D836E" },
+ "-2": { rgb: [104, 116, 89], hex: "#687459" },
+ "-3": { rgb: [115, 102, 69], hex: "#736645" },
+ "-4": { rgb: [126, 88, 48], hex: "#7E5830" },
+ "-5": { rgb: [111, 77, 42], hex: "#6F4D2A" },
+ "-6": { rgb: [95, 65, 36], hex: "#5F4124" },
+ "-7": { rgb: [80, 54, 30], hex: "#50361E" },
+ "-8": { rgb: [65, 43, 24], hex: "#412B18" },
+ "-9": { rgb: [49, 31, 18], hex: "#311F12" },
+ "-10": { rgb: [34, 20, 12], hex: "#22140C" }
+};
+
+___________________________
+
+The map for the game should be a grid within a grid to allow for more smooth appearing movement.
+the robot will be able to move across the map using the WASD keys.
+At first, his initial coverage will not be consistent where ever he lands.
+Each individual panel is a 4 by 4 square onto which the character moved but only applied their cleanliness to the 4 innermost squares.
+The innermost 4 squares get the current value of cleanliness the player has the ability to apply to the panel and the surrounding 12 squares only get 1/2 of that.
+
+This forces the player to move over squares multiple times in order to clean a panel to its highest value.
+
+______________________________
+
+Panels contain Tiles.
+
+Panels have a cleanliness Rating. Tiles have a cleanliness rating.
+
+Cleanliness rating of each panel is determined by the average cleanliness rating of each Tile contained within its boundaries. each panel contains 16 tiles in a 4 by 4 grid.
+
+When the player moves to a new tile by spending their scrub counters using the WASD keys, they will apply Cleanliness to the tiles within the panel that they move to occupy. The Cleanliness rating of the tiles is increased based on the chart depicting the effectiveness. essentially the inner 4 tiles receive an increase of their cleanliness rating of +1 which changes their color.
+The outer 12 tiles of the cells of the tiles grid within the panel receive +0.5 which will not always result in a color change for the tiles.
+
+_______________________________________
+
+Default Brush:
+Inner 2 × 2 tiles = current applied Brush POWA level × 1
+Remaining 12 tiles = current applied Brush POWA level × 0.5
+
+Supped UP Brush:
+Inner 2 × 2 tiles = current applied Brush POWA level × 1
+Remaining 12 tiles = current applied Brush POWA level × 1
+
+The tiles can resolve to have cleanliness ratings with decimal point values.
+
+Each tile within each panel will start with a cleanliness rating of 0. Color is determined by the Color table.
+
+All tiles on the map start identically in the demo but in the full release some panels will have lower initial cleanliness values when the map is started.
+
+Cleanliness rating in the demo cannot exceed +4 and not decrease below -10. Values for cleanliness do not change on tiles that are not being moved to by the player or a Mud Boy. idle tiles retain their last updated to cleanliness rating.
+
+
+_________________
+
+TERMS:
+
+POWA counters:
+method by which POWA is represented in a total value displayed to the player as Banked POWA.
+
+Tile cleanliness:
+Each tile in the map can have a cleanliness rating with a minimum of -10 and a maximum of +4.each tile has its cleanliness set initially when the map is started, when the player or a mudboy moves to a panel containing that tile, its cleanliness rating us updated to a new value based on the player's Brush POWA or the Mud Boys action.
+
+Panel Cleanliness:
+Panel cleanliness is determined as an average of the total cleanliness of each of the 16 tiles within it. This is then rounded down to the nearest whole number before being presented as a final value for determining amount of POWA added to the total POWAIN value at the end of each subsequent Day/Night cycle.
+
+POWAOUT:
+The cost of POWA counters required to start the next day
+
+Map cleanliness Total:
+the maximum POWAIN that can be earned on the first map by calculating panel cleanliness is 200. the maximum POWAIN that can be earned on The second map by calculating panel cleanliness is 1250.
+
+The maximum Cleanliness Rating that the first map can be rated as is 400 total cleanliness.
+The maximum Cleanliness Rating that The second map can be rated as is 2500 total cleanliness.
+
+POWAOUT:
+cost of POWA counters to advance to the next level. based on current selected upgrades, purchased upgrades during this upgrade phase, and 5 default powa
+
+POWAIN:
+amount of POWA earned during scoring by evaluating the cleanliness of each panel on the current map with a cleanliness rating of at least 1.
+The value is calculated by combining the POWA earned for all panels on the map.
+panel cleanliness can be determined for each panel greater than or equal to a cleanliness rating of 0 to contribute POWA counters to POWAIN.
+
+Banked POWA:
+amount of POWA counters added to the current total number of POWA counters at the end of the Scoring PHASE before entering the Upgrade phase.
+ The number will be a positive integer greater than or equal to zero.
+
+POWA:
+Pun for power used as currency in the game and the main driving force.
+Player can accumulate POWA as POWA counters by raising the cleanliness rating of the panels in the map by moving to them.
+Cleanliness is applied to tiles in a specified panel which raises the panel cleanliness rating.
+___________________________________________________
+general notes:
+
+POWA cannot be negative.
+-POWA can only be lowered to 0 during purchasing of the next day during the Upgrade phase. If POWA is not sufficient to start the next day, players are forced to TRY AGAIN
+
+GAME STARTING POWA:
+-The player starts with 0 POWA counters.
+For the purposes of the story and the rational to the player that 5 POWA is needed to advance to the next level, they will see a comic about lighting striking the POWA PLANT which generates the initial 5 POWA to start level one.
+The player does not start with 5 POWA and The game starts in the defined default state on Map 1 or on a recorded state for MAP 2
+
+Hypothetical Score equation:
+		POWAIN = Each panel with cleanliness rating of 1 or more based on Tile cleanliness is assigned a total POWA generated value based on the chart. The values of each panel are added together.
+		Further example for MAP 1:
+			2 panels have cleanliness of +4 so they each 'generate' +2 POWA towards POWAIN
+			97 panels have a cleanliness rating of less than or equal to 0 so they 'generate' 0 POWA towards POWAIN
+			1 panel has a cleanliness rating of 3 which generates 1.5 POWA towards POWAIN
+			Total POWA in for a map in this state at the end of a night phase would be 5 POWAIN.
+
+__________________________________________________
+Game sequence/cycle explanation:
+- Game sequence:
+		day 1
+				daylight counters set to 0
+				player stars with timers set to their default value.
+				player starts with shoot and scrub counters
+				daylight timer starts after player makes the first move and one scrub token is 'spent'.
+				scrub timer begins counting down and the pie chart for the displayed timer begins to fill. once full The player will receive 1 scrub token and can make another movement selection
+				the player moved to selected panels on the map and applied cleanliness to the tiles within the panel based on their default loadout for Brush POWA and Brush SIZE.
+				If the player can only move in the direction of panels and cannot leave the map. if they press a key to move in the direction off the edge of the map then they will not spend a scrub counter and the player character icon will not move.
+				the player continues until the daylight timer reaches zero.
+		night1
+				-the player icon disappears from the map and their panel coordinate is saved for the start of the next day if it is purchased.
+				-the player sees a message stating 'HERE THEY COME!' which will last for 2.5 seconds. As soon as the message disappears the night timer starts and the first Mud Boy wave will spawn.
+				-The turret image appears at the top of the map between the menu dash and the topmost row of panels.
+				-the player clicks on Mud Boys as they spawn to protect the panels from further cleanliness reduction.
+				-clicking on the panel that a Mud Boy occupies shows the shoot animation and spends 1 shoot counter. the shoot timer will start once the number of shoot counters reaches 0. any clicks made to a Mud Boy while the shoot counter is 0 do nothing and the Mud Boys will continue their movement.
+				once the last Mud Boy pops or is moved off of the map, the night ends.
+				-The night can end without Mud Boys being defeated if the night timer reaches 0.
+				-The player will see a message stating "GOOD JOB!" which will last for 3 seconds. the message will appear and The player will see the score screen displayed over the current map.
+		Score Phase:
+				-the player sees the score screen and the map is evaluated to calculate POWAIN. the player sees a message showing "TOTAL POWA:" which displays the total amount of POWAIN calculated by the panel cleanliness system.
+				-POWAIN calculated is added to BANKED POWA which determines the number of POWA tokens added to the player's current total number of POWA tokens which at the end of the first Day/Night cycle should be 0.
+				-player earns their first bit of POWA
+				-The player selects a button that says CONTINUE.
+		Upgrade/Next level phase:
+				-the score phase screen is removed and the player sees the upgrade/Next day screen overlaying the current map in the same condition that it was at the end of the last night phase.
+				-Player sees their new total POWA, the list of available upgrades for purchase, the toggle upgrade on/off option for each upgrade, and 2 buttons at the bottom showing GET SCRUBBIN and TRY AGAIN. GET SCRUBBIN shows the current total cost in POWA that the player must spend after purchasing/enabling upgrades to start the next day.
+				-the player must spend a minimum of 5 POWA tokens to start the next day.
+				-If they do not have the sufficient number of POWA tokens available and cannot reduce the cost needed by disabling upgrades, they must select the Try again option as the GET SCRUBBIN button cannot be selected.
+				-if TRY AGAIN is selected, the player returns to day 1 and all cleanliness on the map is set back to its default value. All upgrades are set to their default value. This constitutes a game restart.
+				-If the player has sufficient POWA to start the next day by selecting "GET SCRUBBIN", the number of DAY tokens will increase by 1 and the upgrade screen will disappear. All selections on upgrades enabled or disabled will be applied for the following day and night phases.
+		GAME FLOW to advance:
+				-game continues with DAY,NIGHT,SCORE,UPGRADE until the player brings all panels on the map up to a Maximum amount of cleanliness during a DAY phase. When that occurs the player sees a splash screen stating "PANEL CLEANED! GREAT JOB SCRUBBIN!" with an option to advance to the next map.
+				-The player will see a the score screen with a POWA calculation reflecting the MAX POWAIN possible for the map applied to their BANKED POWA. The player receives POWA tokens ad advances to the next map.
+				-The player will advance to the next map which will start with its default cleanliness value.
+				-The player starts the next map on the upgrades screen with their new POWA counter amount.
+				-after selecting to GET SCRUBBIN and paying the cost to start the next day based on their upgrade selection, the player begins on the new map (map 2 for demo.)
+				-the player continues the pattern until the MAP panels have the maximum of cleanliness.
+				-In DEMO:once all maps are completed the player sees a screen stating "Thank you for playing!". the full release will have a more story based ending with additional messages about generating CLEAN POWA
+		FAILURE:
+				-The player cannot fail the game by force and can only TRY AGAIN. If they select to TRY AGAIN, they will be moved to DAY 1 on the current MAP that they are assigned to.
+				-If the player is on MAP 2 or higher, they will be moved back to the game state that they were in when they fist arrived at the new map. Their upgrades and POWA will be set back to what they were at the start of the level and the DAy counter will also be reverted to the number of counters it had when the player first started the level.
+				-In the demo: the game state only persists while the game is running and If the player closes out the game all progress is lost. in the full releases the player can select to save and load their progress on whichever day they chose to avoid restarting the current level.
+
+
+______________________________
+
+WAX- a purchasable upgrade that allows players to acquire 1 WAX counter.
+players can apply WAX to panels with an average cleanliness rating of 4. Wax can be applied by the player navigating to a panel with a cleanliness rating of 4 and pressing the space bar.
+This will decrease their wax counter by 1 and apply WAX to the currently occupied Panel.
+
+Panels with wax applied will have all of their tiles change color to pink. Tile cleanliness rating will not change to a new value. Tiles can only appear pink if they are set to a cleanliness rating of +4 and are waxed.
+
+In addition, the panels and tiles applied with wax are immune to decreases in cleanliness rating due to Mud Boys.
+
+- WAXED state:
+		-tiles in a panel can be waxed which will set the panel as WAXED. the tiles receive the waxed status to change their color and panel waxed state is used to determine if changes to cleanliness can be further applied by the player or Mud Boys.
+		-tiles in WAXED state have a cleanliness rating of +4 and cannot be updated except by changes in game state like TRY AGAIN.
+		-WAX can only be applied once to the tiles within a panel to bring the panel state to WAXED
+		-panels are determined to be waxed if all the tiles within the panel are waxed.
+		-WAX can only be added uniformly to all tiles within a particular panel and only if the panel cleanliness is at a +4 rating
+		-WAX state cleanliness immunity extends to movement by the player, Mud Boys movement to the panel, or Mud Boys popping near or on the panel.
+	- Acquiring WAX:
+	 -WAX counters can be purchased during the upgrade phase. WAX cannot be disabled like other upgrades so once purchased they are added to the total available wax counters until they are spent or the game state is reset with a TRY AGAIN. WAX counters persist between days and between maps if the total number of wax counters available to the player based on upgrades is more than 0.
+	- WAX PANEL CANNOT BE SCRUBBED
+		-If the player moves to a wax panel they will not be charged a scrub token. this effect applies even If the player does not have the retractable bristles upgrade enabled in a day phase.
+			Cleanliness on a wax panel cannot be updated by the player movements or Mud Boy actions.
+		-If retractable bristles is applied then the panel is evaluated for cleanliness before applying cleanliness by the player movement, but since the cleanliness of the waxed panel is +4, not scrub token will be applied.
+
+WAX is acquired as WAX tokens which can be purchased with POWA and added to your Banked WAX. There is no timer associated with WAX so counters are only added when they are purchased and only lost when they are used on a map's panels.
+
+

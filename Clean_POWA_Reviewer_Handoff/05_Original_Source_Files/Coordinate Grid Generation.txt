@@ -1,0 +1,16 @@
+Completed the full coordinate grid using the established structure of **10 × 10 panels**, with each panel containing **4 × 4 tiles**, producing a **40 × 40 tile map** and **1,600 total tile coordinates**. fileciteturn0file6
+
+Under the `T(column,row)` format, the final coordinate is:
+
+`P(9,9)T(39,39)`
+
+`T(99)` would work as a linear tile index, but not as a column-and-row coordinate. I included linear indices from `0–1599` in the workbook as a separate field.
+
+- [Download the Excel coordinate grid](sandbox:/mnt/data/Clean_POWA_Map_Coordinate_Grid.xlsx)
+- [Download the tab-separated 40 × 40 grid](sandbox:/mnt/data/Clean_POWA_Map_Coordinate_Grid.tsv)
+
+The workbook contains:
+
+- **Coordinate Grid:** the complete visual 40 × 40 map
+- **Coordinate List:** all 1,600 coordinates with panel, global tile, local tile, and linear-index values
+- **Coordinate Rules:** formulas, examples, and endpoint clarification

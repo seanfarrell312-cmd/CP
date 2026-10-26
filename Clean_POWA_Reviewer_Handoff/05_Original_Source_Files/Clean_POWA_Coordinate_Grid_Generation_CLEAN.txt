@@ -1,0 +1,14 @@
+Completed the full coordinate grid using the established structure of 10 × 10 panels, with each panel containing 4 × 4 tiles, producing a 40 × 40 tile map and 1,600 total tile coordinates.
+
+Under the T(column,row) format, the final coordinate is:
+
+P(9,9)T(39,39)
+
+T(99) would work as a linear tile index, but not as a column-and-row coordinate. Linear indices from 0–1599 are included in the workbook as a separate field.
+
+
+The workbook contains:
+
+- Coordinate Grid: the complete visual 40 × 40 map
+- Coordinate List: all 1,600 coordinates with panel, global tile, local tile, and linear-index values
+- Coordinate Rules: formulas, examples, and endpoint clarification

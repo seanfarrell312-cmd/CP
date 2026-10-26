@@ -1,0 +1,16 @@
+﻿cleanliness rating,RGB,Hex,Visual meaning
+4,"rgb(91, 194, 231)",`#5BC2E7`,Zima Blue
+3,"rgb(89, 182, 206)",`#59B6CE`,Clear blue
+2,"rgb(86, 170, 181)",`#56AAB5`,Clean aqua
+1,"rgb(84, 157, 155)",`#549D9B`,Faded teal
+0,"rgb(82, 145, 130)",`#529182`,Neutral clean
+-1,"rgb(93, 131, 110)",`#5D836E`,Dingy green
+-2,"rgb(104, 116, 89)",`#687459`,Grimy olive
+-3,"rgb(115, 102, 69)",`#736645`,Dirty umber
+-4,"rgb(126, 88, 48)",`#7E5830`,Mud brown
+-5,"rgb(111, 77, 42)",`#6F4D2A`,Heavy mud
+-6,"rgb(95, 65, 36)",`#5F4124`,Dark mud
+-7,"rgb(80, 54, 30)",`#50361E`,Caked dirt
+-8,"rgb(65, 43, 24)",`#412B18`,Deep grime
+-9,"rgb(49, 31, 18)",`#311F12`,Near-black brown
+-10,"rgb(34, 20, 12)",`#22140C`,Very dark brown

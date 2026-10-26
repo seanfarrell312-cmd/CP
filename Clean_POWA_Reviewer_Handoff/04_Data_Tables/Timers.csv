@@ -1,0 +1,5 @@
+﻿Timer Name,Default Duration (seconds),color,Name Displayed to the player on the game screen
+Scrub,3,light blue,Scrubber
+Shoot,3,Red,Reload
+Daylight,70,Orange,Daylight
+Night,45,Purple,Night

@@ -1,0 +1,51 @@
+﻿Extra Scrubbers level,MAX number of scrub counters allowed in Scrub counter bank,cost (POWA),maintenance cost added
+0(default),1,0,0
+1,2,10,3
+2,3,15,6
+3,4,20,9
+,,,
+Clip Size,MAX number of shoot counters allowed in Shoot Counter bank,cost (POWA),maintenance cost added
+0(default),1,0,0
+1,2,10,3
+2,3,15,6
+3,4,20,9
+,,,
+WAX,charges(wax counters added),cost (POWA),maintenance cost added
+0(default),0,0,0
+1,1,5,0
+2,2,8,0
+3,3,10,0
+,,,
+Retractable Bristles,enabled,cost (POWA),maintenance cost added
+0(default),no,0,0
+1,yes,15,10
+,,,
+Time Manipulation,daylight timer length (sec),cost (POWA),maintenance cost added
+0(default),70,0,0
+1,80,15,5
+2,90,30,10
+3,100,45,15
+Reload Speed,,,
+reload speed,reload timer,cost (POWA),maintenance cost added
+0(default),3,0,0
+1,2.5,5,2
+2,2,10,4
+3,1.5,15,6
+4,1,20,8
+Scrubbing Speed Level,,,
+scrubbing speed level,scrub timer value (seconds),cost (POWA),maintenance cost added
+0(default),3,0,0
+1,2.5,5,2
+2,2,10,4
+3,1.5,15,6
+4,1,20,8
+,,,
+Brush POWA level,cleanliness level,cost (POWA),maintenance cost added
+0(default),1,0,0
+1,2,10,3
+2,3,15,5
+3,4,20,10
+,,,
+Brush Size,effect,cost (POWA),maintenance cost (POWAOUT added)
+default,no change from default,0,0
+Supped UP,all tiles in a panel the player moves to with a scrubbing action receive the same amount of cleanliness applied to them determineed by the players current level of Brush POWA,15,5

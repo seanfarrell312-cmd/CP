@@ -1,0 +1,10 @@
+﻿Upgrade Name,Effect Definition,DEMO/FULL
+Extra Scrubbers,MAX number of scrub counters allowed in Scrub counter bank. each level increases the number of Scrub counters provided when Scrub timer reaches 1,FULL
+Clip Size,MAX number of shoot counters allowed in Shoot Counter bank. each level increases the number of shoot counters provided when reload timer reaches 0,FULL
+WAX,charges(wax counters added). WAX can be applied to panels with cleanliness of +4 to lock in their cleanliness state and prevent them from having their cleanliness level lowered by Mud Boys.,FULL
+Retractable Bristles,allows movement across panels with cleanliness rating of 4 to consume 0 scrub counters when moved to/over/across them. allows for scrubbing counters to be applied only when moving to a tile with an average cleanliness value less than 4. all other moves will not lower amount of scrubbing counters,FULL
+Time Manipulation,amount of time on the daylight timer. each level increases day length,FULL
+Reload Speed,amount of time on the shoot/reload timer. each level decreases the time of reload timer,FULL
+Scrubbing Speed,amount of time on the scrub timer. each level decreases the time of scrub timer,FULL
+Brush POWA Level,amount of cleanliness applied when movement is performed from one panel to another. Increases cleanliness strength from 1 to up to 4 with each level,FULL
+Brush Size,uniformity of cleanliness applied on the tiles within a panel moved to.,FULL
