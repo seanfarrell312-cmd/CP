@@ -1,0 +1,125 @@
+import { describe, expect, it } from 'vitest';
+import { MAPS } from '../src/rules/config';
+import { createBank, rechargeProgress, spend, tickBank } from '../src/rules/counterBank';
+import { createDay, tickDay, tryMove } from '../src/rules/dayPhase';
+import { colorLevel, createMap, expectedPowain, getTile, isFullyClean, panelRating } from '../src/rules/grid';
+
+const map1 = () => createMap(MAPS[0]);
+
+describe('grid', () => {
+  it('Map 1 is 10x10 panels, 40x40 tiles, all 0', () => {
+    const m = map1();
+    expect([m.panelsX, m.panelsY, m.tilesX, m.tilesY]).toEqual([10, 10, 40, 40]);
+    expect(m.tiles.every((v) => v === 0)).toBe(true);
+  });
+
+  it('D19: tile colour level clamps then truncates toward zero', () => {
+    expect([-0.5, -1.7, 0.5, 1.7, 9, -12].map(colorLevel)).toEqual([0, -1, 0, 1, 4, -10]);
+  });
+
+  it('D03: expected POWAIN sums panel values then rounds down', () => {
+    const m = map1();
+    const setPanel = (px: number, v: number) => {
+      for (let ty = 0; ty < 4; ty++) for (let tx = 0; tx < 4; tx++) m.tiles[ty * m.tilesX + px * 4 + tx] = v;
+    };
+    setPanel(0, 1);
+    expect(expectedPowain(m)).toBe(0); // 0.5 → 0
+    setPanel(1, 3);
+    setPanel(2, 4);
+    expect(expectedPowain(m)).toBe(4); // 0.5 + 1.5 + 2
+    expect(isFullyClean(m)).toBe(false);
+    m.tiles.fill(4);
+    expect(isFullyClean(m)).toBe(true);
+    expect(expectedPowain(m)).toBe(200);
+  });
+});
+
+describe('counter bank (D04/D05)', () => {
+  it('max 4: recharges +1 per timer while below max, then stops', () => {
+    const b = createBank(4, 3);
+    spend(b);
+    spend(b);
+    expect(b.count).toBe(2);
+    tickBank(b, 3);
+    expect(b.count).toBe(3);
+    tickBank(b, 3);
+    expect(b.count).toBe(4);
+    tickBank(b, 10);
+    expect(b.count).toBe(4);
+    expect(rechargeProgress(b)).toBe(0);
+  });
+
+  it('max 1: spent counter returns after 3 s', () => {
+    const b = createBank(1, 3);
+    expect(spend(b)).toBe(true);
+    expect(spend(b)).toBe(false);
+    tickBank(b, 2.9);
+    expect(b.count).toBe(0);
+    tickBank(b, 0.1);
+    expect(b.count).toBe(1);
+  });
+});
+
+describe('day phase', () => {
+  it('scenario 3: W/A at P(0,0) do nothing and do not start the clock; S scrubs P(0,1)', () => {
+    const day = createDay(map1());
+    expect(tryMove(day, 'up')).toBe('blocked');
+    expect(tryMove(day, 'left')).toBe('blocked');
+    tickDay(day, 5);
+    expect(day.started).toBe(false);
+    expect(day.timeLeft).toBe(70);
+    expect(day.scrub.count).toBe(1);
+
+    expect(tryMove(day, 'down')).toBe('moved');
+    expect([day.px, day.py]).toEqual([0, 1]);
+    expect(day.started).toBe(true);
+    expect(day.scrub.count).toBe(0);
+    expect(panelRating(day.map, 0, 0)).toBe(0);
+  });
+
+  it('scenario 1: default brush gives centre 1 / border 0.5, rating 0, then 1 after a second pass', () => {
+    const day = createDay(map1());
+    tryMove(day, 'down');
+    const m = day.map;
+    expect(getTile(m, 1, 5)).toBe(1);
+    expect(getTile(m, 0, 4)).toBe(0.5);
+    expect(panelRating(m, 0, 1)).toBe(0);
+    tickDay(day, 3);
+    tryMove(day, 'up');
+    tickDay(day, 3);
+    tryMove(day, 'down');
+    expect(panelRating(m, 0, 1)).toBe(1);
+  });
+
+  it('cannot move without a scrub counter', () => {
+    const day = createDay(map1());
+    tryMove(day, 'down');
+    expect(tryMove(day, 'down')).toBe('no-counter');
+    expect([day.px, day.py]).toEqual([0, 1]);
+  });
+
+  it('D26: day ends at 70 s and a recharge landing on that frame grants nothing', () => {
+    const day = createDay(map1());
+    tryMove(day, 'down');
+    tickDay(day, 69);
+    expect(day.ended).toBe(false);
+    expect(day.scrub.count).toBe(1);
+    tryMove(day, 'down');
+    tickDay(day, 1);
+    expect(day.ended).toBe(true);
+    expect(day.timeLeft).toBe(0);
+    expect(day.scrub.count).toBe(0);
+    expect(tryMove(day, 'down')).toBe('day-over');
+  });
+
+  it('tiles clamp at +4', () => {
+    const day = createDay(map1(), { brushPowa: 4, startedImmediately: true });
+    for (let i = 0; i < 3; i++) {
+      tryMove(day, 'right');
+      tickDay(day, 3);
+      tryMove(day, 'left');
+      tickDay(day, 3);
+    }
+    expect(Math.max(...day.map.tiles)).toBe(4);
+  });
+});
