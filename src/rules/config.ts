@@ -9,7 +9,7 @@ export const TIMERS = {
 } as const;
 
 export const TILE_MIN = -10;
-export const TILE_MAX = 4;
+export const TILE_MAX = 8; // D30 (was 4)
 export const TILES_PER_PANEL_SIDE = 4;
 
 export interface MapDefinition {
@@ -40,31 +40,37 @@ export const BRUSH_AOE_SUPPED_UP: BrushAoe = [
   [1, 1, 1, 1],
 ];
 
-export const DEFAULT_BRUSH_POWA = 1;
+export const DEFAULT_BRUSH_POWA = 2; // D30 (was 1)
 export const DEFAULT_SCRUB_MAX = 1;
 export const DEFAULT_SHOOT_MAX = 1;
 
-// POWA added to POWAIN per panel, by panel cleanliness rating.
+// POWA added to POWAIN per panel, by panel cleanliness rating (D30: extended to +8).
 export const POWA_CONVERSION: Record<number, number> = {
   [-10]: 0, [-9]: 0, [-8]: 0, [-7]: 0, [-6]: 0, [-5]: 0, [-4]: 0,
   [-3]: 0, [-2]: 0, [-1]: 0, 0: 0, 1: 0.5, 2: 1, 3: 1.5, 4: 2,
+  5: 2.5, 6: 3, 7: 3.5, 8: 4,
 };
 
-// Tile colour by cleanliness level (-10..+4).
+// Tile colour by cleanliness level (-10..+8). D30: 0 is dark mud so a fresh map looks dirty,
+// and each step up is a clearly different shade.
 export const TILE_COLORS: Record<number, string> = {
-  4: '#5BC2E7',
-  3: '#59B6CE',
-  2: '#56AAB5',
-  1: '#549D9B',
-  0: '#529182',
-  [-1]: '#5D836E',
-  [-2]: '#687459',
-  [-3]: '#736645',
-  [-4]: '#7E5830',
-  [-5]: '#6F4D2A',
-  [-6]: '#5F4124',
-  [-7]: '#50361E',
-  [-8]: '#412B18',
-  [-9]: '#311F12',
-  [-10]: '#22140C',
+  8: '#5BC2E7', // Zima Blue
+  7: '#4FB3C4',
+  6: '#45A39A',
+  5: '#4F9A6E',
+  4: '#6F8A4A',
+  3: '#8C7A3A',
+  2: '#8A5E2E',
+  1: '#6B4423',
+  0: '#4A2E17', // dark mud
+  [-1]: '#442A15',
+  [-2]: '#3F2713',
+  [-3]: '#392312',
+  [-4]: '#342010',
+  [-5]: '#2E1C0E',
+  [-6]: '#28180C',
+  [-7]: '#23150A',
+  [-8]: '#1D1109',
+  [-9]: '#180E07',
+  [-10]: '#120A05',
 };

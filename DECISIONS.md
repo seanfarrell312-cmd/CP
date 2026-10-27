@@ -159,7 +159,20 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** Nothing (previously undecided).
 **Test:** The demo runs end-to-end with no external image or sound files.
 
+### D30: Doubled cleanliness scale for faster early POWA (confirmed 2026-10-27, from play test 1)
+**Why:** In the first play test, cleaning was hard to see and reaching 5 POWA on Day 1 was too hard. Under the original numbers a single default scrub leaves a panel at rating 0 (pays nothing), so the best possible Day 1 was ~6 POWA and sloppy play earned 0.
+**Decision:**
+1. Tile cleanliness range is **-10 to +8** (was +4). Tiles still start at **0**. "Fully clean" is a panel rated **+8**.
+2. Default **Brush POWA is 2** (was 1). Brush POWA upgrade levels double to match: L1 = 4, L2 = 6, L3 = 8 (costs and maintenance unchanged). Brush AoE and Supped UP Brush unchanged.
+3. POWAIN stays **0.5 per positive panel level**: +1 = 0.5 … +8 = 4. Map 1 max = 400 per night, Map 2 max = 2,500. D03 rounding still applies.
+4. New 19-step palette: **0 is dark mud brown** (so a fresh map looks dirty), each level up to +8 is a clearly different shade ending at Zima Blue `#5BC2E7`, and -1 to -10 get progressively darker toward near-black. Values live in `src/rules/config.ts`.
+5. Every rule that referred to "+4" now means "+8": Retractable Bristles free entry, Wax eligibility, victory (D15/D23), and the +4 clamp.
+**Overrides:** RULES/MAPS tile range -10..+4; BALANCE `colors`, `POWA conversion` (extended past +4), `Upgrade Levels` Brush POWA level values (1/2/3/4 → 2/4/6/8); master handoff §2 completion totals (400/2,500 → 800/5,000 aggregate). Mud Boy damage (-1 per entry, -2/-1 pop) is **not** changed yet; revisit in step 2.
+**Test:** One default scrub on a fresh panel → centre tiles +2, border +1, panel rating 1, worth 0.5. A second scrub → rating 2. A 24-move Day 1 visiting a new panel each move earns 12 POWA. All 100 Map 1 panels at +8 → 400 POWAIN.
+
 ## Still open
+
+- D30 follow-up: whether Mud Boy dirt amounts should double with the scale. Settle in step 2.
 
 - D02 detail: what the Score screen's `POWAOUT` line shows. Settle during UI work.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
