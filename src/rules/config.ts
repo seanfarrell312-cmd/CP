@@ -79,3 +79,46 @@ export const TILE_COLORS: Record<number, string> = {
 export const MUD_ENTER = -2; // each panel a Mud Boy spawns on or moves into
 export const MUD_POP_CENTER = -4;
 export const MUD_POP_NEIGHBOR = -2;
+
+// Night timing: D06 (Mud Boy action every 3 s), D12 (2 s warning, wave 1 at t=2, then every 6 s).
+export const NIGHT = {
+  warning: 2,
+  firstWaveAt: 2,
+  waveSpacing: 6,
+  mudBoyAction: 3,
+  shotDamage: 1,
+} as const;
+
+// Days 2+ open with READY / SET / SCRUB!, one word per second.
+export const READY_COUNTDOWN = 3;
+
+export type Edge = 'top' | 'bottom' | 'left' | 'right';
+
+export interface WaveRow {
+  count: number; // Mud Boys per wave (D08)
+  edge: Edge; // spawn edge (D16)
+  destination: Edge;
+  hp: number; // D07
+  waves: number;
+}
+
+// BALANCE `Mud boy Waves`: a 30-day cycle repeated for days 1-90, then the `>90` row (D21).
+const EDGE_CYCLE: [Edge, Edge][] = [
+  ['bottom', 'top'],
+  ['left', 'right'],
+  ['right', 'left'],
+];
+
+function waveCycleRow(i: number): WaveRow {
+  const [edge, destination] = EDGE_CYCLE[i % 3];
+  const tier = i < 12 ? 0 : i < 24 ? 1 : 2;
+  const count = 3 + Math.floor((i - tier * 12) / 3);
+  return { count, edge, destination, hp: 3 * (tier + 1), waves: tier + 1 };
+}
+
+export const WAVE_TABLE: WaveRow[] = Array.from({ length: 90 }, (_, d) => waveCycleRow(d % 30));
+export const WAVE_AFTER_90: WaveRow = { count: 4, edge: 'bottom', destination: 'top', hp: 9, waves: 3 };
+
+export function waveForDay(day: number): WaveRow {
+  return day > 90 ? WAVE_AFTER_90 : WAVE_TABLE[day - 1];
+}

@@ -185,3 +185,9 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 
 - D02 detail: what the Score screen's `POWAOUT` line shows. Settle during UI work.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
+- Night-phase derived details (step 2 build), flagged for owner review:
+  - A Mud Boy "reaches the far edge" when its forward action would take it off the map; it pops on the edge panel it is standing on (same as the D10 push-off rule).
+  - Being shot and knocked back does not reset the Mud Boy's own 3 s forward timer.
+  - A wave spawns only on edge panels not already occupied (Mud Boys never share a panel, D10); if fewer free panels than Mud Boys remain, the extras do not spawn.
+  - Mud Boys still on the map when the Night clock hits 0 simply leave, with no pop and no dirt.
+  - Until step 3 adds the Score and upgrade screens, the end of night shows a temporary "Morning!" screen with NEXT DAY, which skips the D02 day cost.

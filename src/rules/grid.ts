@@ -14,13 +14,20 @@ export interface MapState {
   tilesY: number;
   // Raw tile cleanliness, row-major by global tile coordinate.
   tiles: Float64Array;
+  // 1 where the panel is waxed (immune to every cleanliness change), row-major by panel.
+  waxed: Uint8Array;
 }
 
 export function createMap(def: MapDefinition, startValue = 0): MapState {
   const tilesX = def.panelsX * SIDE;
   const tilesY = def.panelsY * SIDE;
   const tiles = new Float64Array(tilesX * tilesY).fill(startValue);
-  return { panelsX: def.panelsX, panelsY: def.panelsY, tilesX, tilesY, tiles };
+  const waxed = new Uint8Array(def.panelsX * def.panelsY);
+  return { panelsX: def.panelsX, panelsY: def.panelsY, tilesX, tilesY, tiles, waxed };
+}
+
+export function isWaxed(map: MapState, px: number, py: number): boolean {
+  return map.waxed[py * map.panelsX + px] === 1;
 }
 
 export function inBounds(map: MapState, px: number, py: number): boolean {
@@ -56,6 +63,17 @@ export function applyBrush(map: MapState, px: number, py: number, brushPowa: num
     for (let lx = 0; lx < SIDE; lx++) {
       const i = (py * SIDE + ly) * map.tilesX + px * SIDE + lx;
       map.tiles[i] = clampTile(map.tiles[i] + brushPowa * aoe[ly][lx]);
+    }
+  }
+}
+
+// Mud Boy dirt (D32): adds `amount` to all 16 tiles of a panel. Off-map and waxed panels are untouched.
+export function applyMud(map: MapState, px: number, py: number, amount: number): void {
+  if (!inBounds(map, px, py) || isWaxed(map, px, py)) return;
+  for (let ly = 0; ly < SIDE; ly++) {
+    for (let lx = 0; lx < SIDE; lx++) {
+      const i = (py * SIDE + ly) * map.tilesX + px * SIDE + lx;
+      map.tiles[i] = clampTile(map.tiles[i] + amount);
     }
   }
 }

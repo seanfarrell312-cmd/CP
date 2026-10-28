@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BRUSH_AOE_DEFAULT, POWA_CONVERSION, TILE_COLORS, TILE_MAX, TILE_MIN, TIMERS } from '../src/rules/config';
+import { BRUSH_AOE_DEFAULT, POWA_CONVERSION, TILE_COLORS, TILE_MAX, TILE_MIN, TIMERS, waveForDay } from '../src/rules/config';
 
 const DATA = 'Clean_POWA_Reviewer_Handoff/04_Data_Tables/';
 
@@ -44,5 +44,14 @@ describe('D30 palette', () => {
     for (let l = TILE_MIN; l <= TILE_MAX; l++) colors.push(TILE_COLORS[l]);
     expect(colors.every((c) => /^#[0-9A-F]{6}$/.test(c))).toBe(true);
     expect(new Set(colors).size).toBe(TILE_MAX - TILE_MIN + 1);
+  });
+});
+
+describe('Mud Boy wave table', () => {
+  it('matches Mud_boy_Waves.csv for days 1-90 and the >90 row', () => {
+    for (const [count, edge, destination, hp, waves, day] of csvRows('Mud_boy_Waves.csv').slice(1)) {
+      const expected = { count: Number(count), edge, destination, hp: Number(hp), waves: Number(waves) };
+      expect(waveForDay(day === '>90' ? 91 : Number(day))).toEqual(expected);
+    }
   });
 });
