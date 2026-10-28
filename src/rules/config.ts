@@ -51,26 +51,31 @@ export const POWA_CONVERSION: Record<number, number> = {
   5: 2.5, 6: 3, 7: 3.5, 8: 4,
 };
 
-// Tile colour by cleanliness level (-10..+8). D30: 0 is dark mud so a fresh map looks dirty,
-// and each step up is a clearly different shade.
+// Tile colour by cleanliness level (-10..+8). D31: 0 is dusty grey, cleaning goes sage to
+// Zima Blue, and everything below 0 is Mud Boy mud (warm brown to near-black).
 export const TILE_COLORS: Record<number, string> = {
   8: '#5BC2E7', // Zima Blue
-  7: '#4FB3C4',
-  6: '#45A39A',
-  5: '#4F9A6E',
-  4: '#6F8A4A',
-  3: '#8C7A3A',
-  2: '#8A5E2E',
-  1: '#6B4423',
-  0: '#4A2E17', // dark mud
-  [-1]: '#442A15',
-  [-2]: '#3F2713',
-  [-3]: '#392312',
-  [-4]: '#342010',
-  [-5]: '#2E1C0E',
-  [-6]: '#28180C',
-  [-7]: '#23150A',
-  [-8]: '#1D1109',
-  [-9]: '#180E07',
-  [-10]: '#120A05',
+  7: '#50B8CC',
+  6: '#4AB0B4',
+  5: '#4AA9A0',
+  4: '#52A28F',
+  3: '#5F9A82',
+  2: '#6E9077',
+  1: '#7A8670',
+  0: '#7D7B6A', // dust
+  [-1]: '#8A5A2B', // mud
+  [-2]: '#7A4E25',
+  [-3]: '#6B4320',
+  [-4]: '#5C391B',
+  [-5]: '#4E3017',
+  [-6]: '#422813',
+  [-7]: '#36200F',
+  [-8]: '#2B190C',
+  [-9]: '#211309',
+  [-10]: '#170D06',
 };
+
+// D32: Mud Boy dirt, doubled to match the D30 scale.
+export const MUD_ENTER = -2; // each panel a Mud Boy spawns on or moves into
+export const MUD_POP_CENTER = -4;
+export const MUD_POP_NEIGHBOR = -2;

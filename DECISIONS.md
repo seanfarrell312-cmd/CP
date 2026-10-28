@@ -165,14 +165,23 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 1. Tile cleanliness range is **-10 to +8** (was +4). Tiles still start at **0**. "Fully clean" is a panel rated **+8**.
 2. Default **Brush POWA is 2** (was 1). Brush POWA upgrade levels double to match: L1 = 4, L2 = 6, L3 = 8 (costs and maintenance unchanged). Brush AoE and Supped UP Brush unchanged.
 3. POWAIN stays **0.5 per positive panel level**: +1 = 0.5 … +8 = 4. Map 1 max = 400 per night, Map 2 max = 2,500. D03 rounding still applies.
-4. New 19-step palette: **0 is dark mud brown** (so a fresh map looks dirty), each level up to +8 is a clearly different shade ending at Zima Blue `#5BC2E7`, and -1 to -10 get progressively darker toward near-black. Values live in `src/rules/config.ts`.
+4. ~~New 19-step palette with 0 as dark mud brown.~~ Superseded by D31.
 5. Every rule that referred to "+4" now means "+8": Retractable Bristles free entry, Wax eligibility, victory (D15/D23), and the +4 clamp.
-**Overrides:** RULES/MAPS tile range -10..+4; BALANCE `colors`, `POWA conversion` (extended past +4), `Upgrade Levels` Brush POWA level values (1/2/3/4 → 2/4/6/8); master handoff §2 completion totals (400/2,500 → 800/5,000 aggregate). Mud Boy damage (-1 per entry, -2/-1 pop) is **not** changed yet; revisit in step 2.
+**Overrides:** RULES/MAPS tile range -10..+4; BALANCE `colors`, `POWA conversion` (extended past +4), `Upgrade Levels` Brush POWA level values (1/2/3/4 → 2/4/6/8); master handoff §2 completion totals (400/2,500 → 800/5,000 aggregate). Mud Boy damage: see D32.
 **Test:** One default scrub on a fresh panel → centre tiles +2, border +1, panel rating 1, worth 0.5. A second scrub → rating 2. A 24-move Day 1 visiting a new panel each move earns 12 POWA. All 100 Map 1 panels at +8 → 400 POWAIN.
 
-## Still open
+### D31: Dust vs mud palette (confirmed 2026-10-28, from play test 2)
+**Why:** The owner's original colours separate the map's default dirt from the extra filth Mud Boys add. D30's dark-mud start left no visible room for Mud Boy damage. The player must notice a Mud Boy's effect immediately, and a night should leave a clear mark to deal with the next day.
+**Decision:** Two colour families. **0 (fresh map) is a dull dusty grey** (`#7D7B6A`). **+1 to +8 step through sage and teal to Zima Blue** (`#5BC2E7`), each step visibly different. **-1 to -10 are mud**: warm orange-brown (`#8A5A2B`) getting darker to near-black (`#170D06`). Only Mud Boys can push tiles below 0, so any brown on the map is Mud Boy damage. Exact values live in `src/rules/config.ts`.
+**Overrides:** D30 item 4; BALANCE `colors`.
+**Test:** A fresh panel is grey; one scrub turns it sage/teal; a Mud Boy hit on a fresh panel turns it brown.
 
-- D30 follow-up: whether Mud Boy dirt amounts should double with the scale. Settle in step 2.
+### D32: Mud Boy dirt scaled to the doubled range (confirmed 2026-10-28)
+**Decision:** Mud Boy dirt doubles to match D30: **-2** to all 16 tiles of each panel a Mud Boy enters (spawn per D25, forward moves and forward pushes per D10); a pop applies **-4** to its panel and **-2** to each of the four cardinally adjacent panels. Wax still protects; tiles still clamp at -10.
+**Overrides:** GDD/ENEMY -1 per entry and -2/-1 pop amounts.
+**Test:** A Mud Boy spawning on a fresh panel leaves it at -2 (brown). A pop on a +6 panel leaves it at +2 and drops each neighbour by 2.
+
+## Still open
 
 - D02 detail: what the Score screen's `POWAOUT` line shows. Settle during UI work.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
