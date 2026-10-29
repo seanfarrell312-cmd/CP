@@ -27,7 +27,7 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 5. If Banked POWA is less than the day cost, GET SCRUBBIN! is shown **red** and cannot be pressed (the player must unequip upgrades or use TRY AGAIN).
 6. An unlock purchase is refused if, after paying, Banked POWA would be less than 5 + maintenance of the currently selected loadout (shows the `MUST RETAIN` message). Equipping a more expensive loadout is always allowed; it may turn GET SCRUBBIN! red.
 **Overrides:** GDD/RULES/master handoff §7 wording `BANKED = POWAIN - POWAOUT` and the literal "must retain +5 POWA" purchase floor (now 5 + selected maintenance). Supersedes PENDING item 2.
-**Not yet decided:** what the Score screen's `POWAOUT` line shows (cost of the day just played vs. nothing). Settle with UI work.
+**Score screen and POWAOUT display:** see D33.
 **Test:** Day 1 free, scores 6 POWAIN → bank 6. Unlock Reload Speed L1 (cost 5) is refused (6 − 5 = 1 < 5). Bank 6, nothing equipped → GET SCRUBBIN! shows 5, press → bank 1. Night 2 scores 12 → bank 13. Unlock Reload L1 (5) → bank 8; equip it → day cost 7, press → bank 1. With bank 4 after a bad night, GET SCRUBBIN! is red.
 
 ### D03: Fractional POWA (confirmed 2026-10-25)
@@ -181,13 +181,23 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** GDD/ENEMY -1 per entry and -2/-1 pop amounts.
 **Test:** A Mud Boy spawning on a fresh panel leaves it at -2 (brown). A pop on a +6 panel leaves it at +2 and drops each neighbour by 2.
 
+### D33: Score screen and where POWAOUT appears (confirmed 2026-10-29)
+**Decision:** The Score screen only reports the night's result: the POWAIN earned (D03 rounded) and the Banked POWA after it is added. It has **no POWAOUT line**. POWAOUT is the day cost (5 + maintenance of the selected loadout, D02) and is shown **only as the number on the GET SCRUBBIN! button** on the upgrade screen, updating as the player changes the loadout. The number and button are **red** and the button cannot be pressed when the cost exceeds Banked POWA.
+**Overrides:** GDD/RULES Score screen "POWAIN / POWAOUT / BANKED" layout. Settles the D02 "Not yet decided" item.
+**Test:** Night 1 scores 12 → Score screen shows POWAIN 12, BANKED 12, no POWAOUT. Upgrade screen GET SCRUBBIN! shows 5 in green. Equip upgrades until the cost is 13 → number and button red, not pressable.
+
 ## Still open
 
-- D02 detail: what the Score screen's `POWAOUT` line shows. Settle during UI work.
+- Upgrade pacing: step 3 uses the BALANCE `Upgrade Levels` costs as-is (Brush POWA values per D30). Owner to judge in play testing whether upgrades max out too quickly with D30 income; a possible fix is more levels per upgrade.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
 - Night-phase derived details (step 2 build), flagged for owner review:
   - A Mud Boy "reaches the far edge" when its forward action would take it off the map; it pops on the edge panel it is standing on (same as the D10 push-off rule).
   - Being shot and knocked back does not reset the Mud Boy's own 3 s forward timer.
   - A wave spawns only on edge panels not already occupied (Mud Boys never share a panel, D10); if fewer free panels than Mud Boys remain, the extras do not spawn.
   - Mud Boys still on the map when the Night clock hits 0 simply leave, with no pop and no dirt.
-  - Until step 3 adds the Score and upgrade screens, the end of night shows a temporary "Morning!" screen with NEXT DAY, which skips the D02 day cost.
+- Upgrade-screen derived details (step 3 build), flagged for owner review:
+  - Buying a level also equips it; the player can click any lower unlocked level (or the free default) to dial back down.
+  - The D02 `MUST RETAIN` floor (bank after paying ≥ 5 + selected maintenance) applies to Wax packs as well as unlocks.
+  - BUY prices are green when the purchase would be allowed and red when it would be refused.
+  - TRY AGAIN asks for confirmation before restoring the checkpoint.
+  - Entering a +8 panel without Retractable Bristles still costs a Scrub counter (the panel stays at +8).

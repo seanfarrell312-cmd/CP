@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { DayScene } from './scenes/DayScene';
 import { NightScene } from './scenes/NightScene';
+import { ScoreScene } from './scenes/ScoreScene';
 import { TitleScene } from './scenes/TitleScene';
+import { UpgradeScene } from './scenes/UpgradeScene';
 import { HEIGHT, WIDTH } from './ui';
 
 const game = new Phaser.Game({
@@ -11,7 +13,7 @@ const game = new Phaser.Game({
   height: HEIGHT,
   backgroundColor: '#22140C',
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-  scene: [TitleScene, DayScene, NightScene],
+  scene: [TitleScene, DayScene, NightScene, ScoreScene, UpgradeScene],
   // ?timeout drives the loop with setTimeout, for test browsers that don't run animation frames.
   fps: { forceSetTimeOut: new URLSearchParams(location.search).has('timeout') },
 });

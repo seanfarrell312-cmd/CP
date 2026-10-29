@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
-import { DEFAULT_SCRUB_MAX, DEFAULT_SHOOT_MAX, TILE_COLORS, TILES_PER_PANEL_SIDE } from '../rules/config';
+import { TILE_COLORS, TILES_PER_PANEL_SIDE, WAX_COLOR } from '../rules/config';
 import { CounterBank, rechargeProgress } from '../rules/counterBank';
-import { colorLevel, expectedPowain, getTile } from '../rules/grid';
-import { RunState, newRun } from '../rules/run';
+import { colorLevel, expectedPowain, getTile, isWaxed } from '../rules/grid';
+import { RunState, equippedValue, newRun } from '../rules/run';
 import { COLORS, FONT, HEIGHT, WIDTH, addButton, hex } from '../ui';
 
 export const HUD_HEIGHT = 96;
@@ -25,7 +25,10 @@ export interface PhaseHud {
   seconds: number;
   // Flash the active bank red after a move or shot with no counter.
   denied: boolean;
+  wax: number;
 }
+
+const WAX_FILL = hex(WAX_COLOR);
 
 // Shared by the Day and Night scenes: map drawing, the HUD, pause and overlays.
 export abstract class MapScene extends Phaser.Scene {
@@ -39,6 +42,7 @@ export abstract class MapScene extends Phaser.Scene {
   private hudLabels: Phaser.GameObjects.Text[] = [];
   private secondsText!: Phaser.GameObjects.Text;
   private powainText!: Phaser.GameObjects.Text;
+  private waxText!: Phaser.GameObjects.Text;
 
   init(data: { run?: RunState }) {
     this.run = data.run ?? newRun();
@@ -82,7 +86,7 @@ export abstract class MapScene extends Phaser.Scene {
         const py = Math.floor(ty / TILES_PER_PANEL_SIDE);
         const x = this.mapX + px * PANEL + GUTTER / 2 + (tx % TILES_PER_PANEL_SIDE) * TILE;
         const y = this.mapY + py * PANEL + GUTTER / 2 + (ty % TILES_PER_PANEL_SIDE) * TILE;
-        g.fillStyle(TILE_FILL[colorLevel(getTile(map, tx, ty))]);
+        g.fillStyle(isWaxed(map, px, py) ? WAX_FILL : TILE_FILL[colorLevel(getTile(map, tx, ty))]);
         g.fillRect(x, y, TILE, TILE);
       }
     }
@@ -107,6 +111,7 @@ export abstract class MapScene extends Phaser.Scene {
     this.secondsText = label(760, 40, '');
     this.powainText = label(940, 14, '');
     label(940, 52, `DAY: ${this.run.day}`);
+    this.waxText = label(1080, 52, '');
 
     const pause = this.add
       .text(WIDTH - 40, HUD_HEIGHT / 2, 'II', { fontFamily: FONT, fontSize: '28px', color: '#3e2723' })
@@ -122,12 +127,16 @@ export abstract class MapScene extends Phaser.Scene {
     this.hudLabels[1].setColor(p.shoot ? '#3e2723' : '#a1887f');
     this.hudLabels[2].setText(p.label);
 
-    this.counters(g, 52, p.scrub, DEFAULT_SCRUB_MAX, COLORS.scrub, 0x1565c0, p.denied);
-    this.counters(g, 252, p.shoot, DEFAULT_SHOOT_MAX, COLORS.reload, 0x8e0000, p.denied);
+    // The inactive bank shows faded at its equipped size.
+    const scrubMax = equippedValue(this.run, 'extraScrubbers');
+    const shootMax = equippedValue(this.run, 'clipSize');
+    this.counters(g, 52, p.scrub, scrubMax, COLORS.scrub, 0x1565c0, p.denied);
+    this.counters(g, 252, p.shoot, shootMax, COLORS.reload, 0x8e0000, p.denied);
 
     this.bar(g, 480, 44, 260, p.fraction, p.color);
     this.secondsText.setText(`${Math.ceil(p.seconds)}s`);
     this.powainText.setText(`POWAIN: ${expectedPowain(this.run.map)}`);
+    this.waxText.setText(p.wax > 0 ? `WAX: ${p.wax}` : '');
   }
 
   // Counter pips and recharge bar; a bank not used this phase shows faded.

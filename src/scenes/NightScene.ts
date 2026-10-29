@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { waveForDay } from '../rules/config';
-import { expectedPowain } from '../rules/grid';
 import { MudBoy, NightState, createNight, shootAt, tickNight } from '../rules/nightPhase';
+import { nightOptions, scoreNight } from '../rules/run';
 import { COLORS, FONT } from '../ui';
 import { MapScene, PANEL } from './MapScene';
 
@@ -28,7 +28,7 @@ export class NightScene extends MapScene {
   }
 
   create() {
-    this.night = createNight(this.run.map, waveForDay(this.run.day));
+    this.night = createNight(this.run.map, waveForDay(this.run.day), nightOptions(this.run));
     this.sprites = new Map();
     this.deniedUntil = 0;
     this.facing = 1;
@@ -112,6 +112,7 @@ export class NightScene extends MapScene {
       fraction: timeLeft / nightLength,
       seconds: timeLeft,
       denied: this.time.now < this.deniedUntil,
+      wax: this.run.wax,
     });
   }
 
@@ -208,21 +209,10 @@ export class NightScene extends MapScene {
     this.tweens.add({ targets: flash, scale: 2, alpha: 0, duration: 150, onComplete: () => flash.destroy() });
   }
 
-  // Placeholder end of night until the Score and upgrade screens exist (step 3).
+  // D02/D03: score the whole map into the bank, then the Score screen. A short beat lets the last pop land.
   private endNight() {
     this.warning?.destroy();
-    this.overlay = this.makeOverlay(
-      'Morning!',
-      [`POWAIN tonight: ${expectedPowain(this.run.map)}`, 'Score and upgrade screens arrive in the next build.'],
-      [
-        ['NEXT DAY', () => this.nextDay(), true],
-        ['TITLE', () => this.scene.start('Title'), true],
-      ],
-    );
-  }
-
-  private nextDay() {
-    this.run.day++;
-    this.scene.start('Day', { run: this.run });
+    const powain = scoreNight(this.run);
+    this.time.delayedCall(600, () => this.scene.start('Score', { run: this.run, powain }));
   }
 }

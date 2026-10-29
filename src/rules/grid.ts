@@ -59,6 +59,7 @@ export function panelRating(map: MapState, px: number, py: number): number {
 }
 
 export function applyBrush(map: MapState, px: number, py: number, brushPowa: number, aoe: BrushAoe): void {
+  if (isWaxed(map, px, py)) return;
   for (let ly = 0; ly < SIDE; ly++) {
     for (let lx = 0; lx < SIDE; lx++) {
       const i = (py * SIDE + ly) * map.tilesX + px * SIDE + lx;

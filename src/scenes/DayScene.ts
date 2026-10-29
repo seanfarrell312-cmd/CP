@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { READY_COUNTDOWN } from '../rules/config';
-import { DayState, Direction, createDay, tickDay, tryMove } from '../rules/dayPhase';
+import { DayState, Direction, createDay, tickDay, tryMove, tryWax } from '../rules/dayPhase';
+import { dayOptions, firstDayIsFree } from '../rules/run';
 import { COLORS, FONT, HEIGHT, WIDTH } from '../ui';
 import { MapScene } from './MapScene';
 
@@ -27,7 +28,7 @@ export class DayScene extends MapScene {
 
   create() {
     const { run } = this;
-    this.day = createDay(run.map, { startPx: run.px, startPy: run.py });
+    this.day = createDay(run.map, dayOptions(run));
     this.deniedUntil = 0;
 
     this.setupMap(COLORS.grass);
@@ -35,7 +36,7 @@ export class DayScene extends MapScene {
     this.placeScrubby(false);
     this.createHud();
 
-    if (run.day === 1) {
+    if (firstDayIsFree(run)) {
       // Day 1: the clock waits for the first valid move.
       this.hint = this.add
         .text(WIDTH / 2, HEIGHT - 4, 'Press W A S D to move and scrub. The day starts on your first move.', {
@@ -77,11 +78,17 @@ export class DayScene extends MapScene {
   }
 
   protected onKey(event: KeyboardEvent) {
+    if (this.countdown > 0) return;
+    if (event.code === 'Space') {
+      if (tryWax(this.day) === 'waxed') this.drawTiles();
+      this.refreshHud();
+      return;
+    }
     const dir = KEYS[event.code];
-    if (!dir || this.countdown > 0) return;
+    if (!dir) return;
 
     const result = tryMove(this.day, dir);
-    if (result === 'moved') {
+    if (result === 'moved' || result === 'glided') {
       this.hint?.destroy();
       this.hint = undefined;
       this.drawTiles();
@@ -101,6 +108,7 @@ export class DayScene extends MapScene {
       fraction: timeLeft / dayLength,
       seconds: timeLeft,
       denied: this.time.now < this.deniedUntil,
+      wax: this.day.wax,
     });
   }
 
@@ -108,6 +116,7 @@ export class DayScene extends MapScene {
   private endDay() {
     this.run.px = this.day.px;
     this.run.py = this.day.py;
+    this.run.wax = this.day.wax;
     this.scene.start('Night', { run: this.run });
   }
 

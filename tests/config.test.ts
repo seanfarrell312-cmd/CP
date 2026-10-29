@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { BRUSH_AOE_DEFAULT, POWA_CONVERSION, TILE_COLORS, TILE_MAX, TILE_MIN, TIMERS, waveForDay } from '../src/rules/config';
+import { BRUSH_AOE_DEFAULT, POWA_CONVERSION, TILE_COLORS, TILE_MAX, TILE_MIN, TIMERS, UPGRADES, WAX_PACKS, waveForDay } from '../src/rules/config';
 
 const DATA = 'Clean_POWA_Reviewer_Handoff/04_Data_Tables/';
 
@@ -53,5 +53,35 @@ describe('Mud Boy wave table', () => {
       const expected = { count: Number(count), edge, destination, hp: Number(hp), waves: Number(waves) };
       expect(waveForDay(day === '>90' ? 91 : Number(day))).toEqual(expected);
     }
+  });
+});
+
+describe('upgrade levels', () => {
+  // Split Upgrade_Levels.csv into blocks of level rows (rows whose cost and maintenance are numbers).
+  function blocks(): string[][][] {
+    const out: string[][][] = [];
+    let current: string[][] | undefined;
+    for (const row of csvRows('Upgrade_Levels.csv')) {
+      const isLevel = row.length >= 4 && row[2] !== '' && !isNaN(Number(row[2])) && !isNaN(Number(row[3]));
+      if (isLevel) (current ??= (out.push([]), out[out.length - 1])).push(row);
+      else current = undefined;
+    }
+    return out;
+  }
+
+  it('costs and maintenance match the workbook; values match except Brush POWA (D30 doubles it)', () => {
+    const [scrubbers, clip, wax, bristles, time, reload, scrub, brush, size] = blocks();
+    const byId = Object.fromEntries(UPGRADES.map((u) => [u.id, u.levels]));
+    const pairs = { extraScrubbers: scrubbers, clipSize: clip, bristles, timeManipulation: time,
+      reloadSpeed: reload, scrubSpeed: scrub, brushPowa: brush, brushSize: size };
+    for (const [id, rows] of Object.entries(pairs)) {
+      expect(byId[id].map((l) => [l.cost, l.maintenance])).toEqual(rows.map((r) => [Number(r[2]), Number(r[3])]));
+      const numeric = rows.every((r) => !isNaN(Number(r[1])));
+      if (numeric) {
+        const scale = id === 'brushPowa' ? 2 : 1;
+        expect(byId[id].map((l) => l.value)).toEqual(rows.map((r) => Number(r[1]) * scale));
+      }
+    }
+    expect(WAX_PACKS).toEqual(wax.slice(1).map((r) => ({ charges: Number(r[1]), cost: Number(r[2]) })));
   });
 });
