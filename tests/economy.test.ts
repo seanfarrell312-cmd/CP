@@ -10,8 +10,10 @@ import {
   dayOptions,
   equip,
   firstDayIsFree,
+  hasShopChanges,
   newRun,
   nightOptions,
+  resetPurchases,
   scoreNight,
   startNextDay,
   tryAgain,
@@ -148,5 +150,39 @@ describe('Wax and Retractable Bristles (D30: +8)', () => {
     expect(tryMove(bristly, 'right')).toBe('glided');
     expect(bristly.scrub.count).toBe(1);
     expect(tryMove(bristly, 'left')).toBe('moved');
+  });
+});
+
+describe('RESET PURCHASES (D34)', () => {
+  it('restores the bank, unlocks and loadout from when the night was scored', () => {
+    const run = newRun();
+    earn(run, 23);
+    expect(hasShopChanges(run)).toBe(false);
+    // 23 - 5 - 10 = 8 left, but the new loadout costs 5 + 2 + 3 = 10: stuck without a reset.
+    expect(unlockNext(run, 'scrubSpeed')).toBe('bought');
+    expect(unlockNext(run, 'extraScrubbers')).toBe('bought');
+    expect(canStartDay(run)).toBe(false);
+    expect(hasShopChanges(run)).toBe(true);
+
+    resetPurchases(run);
+    expect(run.bank).toBe(23);
+    expect(run.unlocked.extraScrubbers).toBe(0);
+    expect(run.equipped.extraScrubbers).toBe(0);
+    expect(run.unlocked.scrubSpeed).toBe(0);
+    expect(canStartDay(run)).toBe(true);
+    expect(hasShopChanges(run)).toBe(false);
+  });
+
+  it('keeps purchases from earlier days', () => {
+    const run = newRun();
+    earn(run, 30);
+    unlockNext(run, 'extraScrubbers');
+    startNextDay(run);
+    const bank = run.bank + earn(run, 10);
+    equip(run, 'extraScrubbers', 0);
+    resetPurchases(run);
+    expect(run.bank).toBe(bank);
+    expect(run.unlocked.extraScrubbers).toBe(1);
+    expect(run.equipped.extraScrubbers).toBe(1);
   });
 });

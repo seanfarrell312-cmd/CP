@@ -8,7 +8,9 @@ import {
   canStartDay,
   dayCost,
   equip,
+  resetPurchases,
   firstDayIsFree,
+  hasShopChanges,
   startNextDay,
   tryAgain,
   unlockNext,
@@ -54,7 +56,7 @@ function valueLabel(id: UpgradeId, value: number): string {
 // Green when buying keeps enough for the next day (D02 item 6), red when it would be refused.
 const priceColor = (ok: boolean) => (ok ? '#2e7d32' : '#c62828');
 
-// D02/D22/D33: unlock, equip and Wax purchases, then GET SCRUBBIN! (cost shown, red when short) or TRY AGAIN.
+// D02/D22/D33/D34: unlock, equip and Wax purchases (undoable), then GET SCRUBBIN! (cost shown, red when short) or TRY AGAIN.
 export class UpgradeScene extends Phaser.Scene {
   private run!: RunState;
   private ui?: Phaser.GameObjects.Container;
@@ -82,6 +84,12 @@ export class UpgradeScene extends Phaser.Scene {
     items.push(text(40, 24, 'UPGRADES', 40, '#fff59d'));
     items.push(text(330, 38, `DAY ${run.day}`, 24));
     items.push(text(WIDTH - 40, 30, `BANKED POWA: ${run.bank}`, 32, '#5BC2E7').setOrigin(1, 0));
+    // D34: undo this screen's purchases, so a misclick never forces TRY AGAIN.
+    const reset = addButton(this, 610, 52, 'RESET PURCHASES', () => {
+      resetPurchases(run);
+      this.render();
+    }, hasShopChanges(run));
+    items.push(reset.setFontSize(20));
 
     UPGRADES.forEach((u, i) => items.push(...this.upgradeRow(u, ROW_TOP + i * ROW_HEIGHT)));
     items.push(...this.waxRow(ROW_TOP + UPGRADES.length * ROW_HEIGHT));

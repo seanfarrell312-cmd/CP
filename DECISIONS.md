@@ -186,6 +186,11 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** GDD/RULES Score screen "POWAIN / POWAOUT / BANKED" layout. Settles the D02 "Not yet decided" item.
 **Test:** Night 1 scores 12 → Score screen shows POWAIN 12, BANKED 12, no POWAOUT. Upgrade screen GET SCRUBBIN! shows 5 in green. Equip upgrades until the cost is 13 → number and button red, not pressable.
 
+### D34: RESET PURCHASES on the upgrade screen (confirmed 2026-10-29, from play test 3)
+**Decision:** The upgrade screen has a **RESET PURCHASES** button in its header, beside the DAY counter. It undoes every unlock, Wax purchase and loadout change made since the upgrade screen opened: Banked POWA, unlocked levels, equipped levels and Wax go back to how they were when the night was scored (or when TRY AGAIN restored the checkpoint). Purchases made on earlier upgrade screens are kept. The button is greyed out when there is nothing to undo. A misclick or miscalculation that turns GET SCRUBBIN! red never forces TRY AGAIN.
+**Overrides:** Nothing; adds to D02.
+**Test:** Bank 23 → buy Scrubbing Speed (5) and Extra Scrubbers (10) → bank 8, GET SCRUBBIN! 10 red. RESET PURCHASES → bank 23, both back to default, GET SCRUBBIN! 5 green.
+
 ## Still open
 
 - Upgrade pacing: step 3 uses the BALANCE `Upgrade Levels` costs as-is (Brush POWA values per D30). Owner to judge in play testing whether upgrades max out too quickly with D30 income; a possible fix is more levels per upgrade.

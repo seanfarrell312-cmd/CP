@@ -37,6 +37,8 @@ export interface RunState {
   equipped: Levels;
   wax: number;
   checkpoint: Checkpoint;
+  // What RESET PURCHASES restores (D34): the state when the upgrade screen opened.
+  shopStart: Checkpoint;
 }
 
 const noLevels = (): Levels =>
@@ -54,8 +56,10 @@ export function newRun(): RunState {
     equipped: noLevels(),
     wax: 0,
     checkpoint: undefined!,
+    shopStart: undefined!,
   };
   run.checkpoint = snapshot(run);
+  run.shopStart = snapshot(run);
   return run;
 }
 
@@ -74,6 +78,25 @@ export function tryAgain(run: RunState): void {
   run.equipped = { ...c.equipped };
   run.wax = c.wax;
   run.day = c.day;
+  run.shopStart = snapshot(run);
+}
+
+// D34: undo every purchase and loadout change made on this upgrade screen.
+export function resetPurchases(run: RunState): void {
+  const s = run.shopStart;
+  run.bank = s.bank;
+  run.unlocked = { ...s.unlocked };
+  run.equipped = { ...s.equipped };
+  run.wax = s.wax;
+}
+
+export function hasShopChanges(run: RunState): boolean {
+  const s = run.shopStart;
+  return (
+    run.bank !== s.bank ||
+    run.wax !== s.wax ||
+    UPGRADES.some((u) => run.unlocked[u.id] !== s.unlocked[u.id] || run.equipped[u.id] !== s.equipped[u.id])
+  );
 }
 
 // Map 1's checkpoint starts with the free Day 1 instead of an upgrade screen.
@@ -149,6 +172,7 @@ export function startNextDay(run: RunState): boolean {
 export function scoreNight(run: RunState): number {
   const powain = expectedPowain(run.map);
   run.bank += powain;
+  run.shopStart = snapshot(run);
   return powain;
 }
 
