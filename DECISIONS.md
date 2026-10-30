@@ -40,7 +40,7 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** GDD `SCRUB/SHOOT COUNTER BANK` and RULES Night wording that timers start only at 0. Supersedes PENDING item 4.
 **Test:** Max 4, Scrub timer 3 s. Use 2 counters at t=0 (bank 2) → bank 3 at t=3, 4 at t=6, timer stopped. Max 1: use the counter at t=0 → bank 1 at t=3.
 
-### D05: Counters per timer completion (confirmed 2026-10-25)
+### D05: Counters per timer completion (confirmed 2026-10-25; superseded by D35)
 **Decision:** Each completed timer adds exactly **+1** counter, never above the bank's max. Extra Scrubbers and Clip Size raise only the max.
 **Overrides:** BALANCE `Upgrade definitions` wording "increases the number of counters provided when timer reaches 0". Supersedes PENDING item 5.
 **Test:** Clip Size L3 (max 4). Timer completes with 0, 1 and 3 stored → 1, 2 and 4 stored.
@@ -190,6 +190,11 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Decision:** The upgrade screen has a **RESET PURCHASES** button in its header, beside the DAY counter. It undoes every unlock, Wax purchase and loadout change made since the upgrade screen opened: Banked POWA, unlocked levels, equipped levels and Wax go back to how they were when the night was scored (or when TRY AGAIN restored the checkpoint). Purchases made on earlier upgrade screens are kept. The button is greyed out when there is nothing to undo. A misclick or miscalculation that turns GET SCRUBBIN! red never forces TRY AGAIN.
 **Overrides:** Nothing; adds to D02.
 **Test:** Bank 23 → buy Scrubbing Speed (5) and Extra Scrubbers (10) → bank 8, GET SCRUBBIN! 10 red. RESET PURCHASES → bank 23, both back to default, GET SCRUBBIN! 5 green.
+
+### D35: Timers refill the whole bank (confirmed 2026-10-29, from play test 3)
+**Decision:** When the Scrub or Reload timer completes, its bank refills **to its max** (all missing counters at once), not +1. The timer still runs only while the bank is below max (D04) and is not restarted by spending more counters while it runs. Extra Scrubbers and Clip Size therefore raise how many counters every refill gives back.
+**Overrides:** D05 (+1 per completion). Matches the BALANCE `Upgrade definitions` wording "increases the number of counters provided when timer reaches 0".
+**Test:** Clip Size L3 (max 4), Reload 3 s. Fire 3 shots (1 left) → after 3 s, 4 stored. Fire 1 at t=0 and 2 more at t=2 → at t=3, 4 stored.
 
 ## Still open
 

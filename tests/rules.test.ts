@@ -37,15 +37,16 @@ describe('grid', () => {
   });
 });
 
-describe('counter bank (D04/D05)', () => {
-  it('max 4: recharges +1 per timer while below max, then stops', () => {
+describe('counter bank (D04/D35)', () => {
+  it('max 4: one completed timer refills the whole bank, then stops', () => {
     const b = createBank(4, 3);
     spend(b);
     spend(b);
-    expect(b.count).toBe(2);
-    tickBank(b, 3);
-    expect(b.count).toBe(3);
-    tickBank(b, 3);
+    spend(b);
+    expect(b.count).toBe(1);
+    tickBank(b, 2.9);
+    expect(b.count).toBe(1);
+    tickBank(b, 0.1);
     expect(b.count).toBe(4);
     tickBank(b, 10);
     expect(b.count).toBe(4);
@@ -144,5 +145,17 @@ describe('day phase', () => {
       tickDay(day, 3);
     }
     expect(Math.max(...day.map.tiles)).toBe(8);
+  });
+});
+
+describe('D35 refill to max', () => {
+  it('spending during a running timer does not restart it', () => {
+    const b = createBank(4, 3);
+    spend(b);
+    tickBank(b, 2);
+    spend(b);
+    spend(b);
+    tickBank(b, 1);
+    expect(b.count).toBe(4);
   });
 });

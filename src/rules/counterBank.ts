@@ -1,6 +1,6 @@
 // Scrub / Shoot counter bank with its recharge timer.
 // D04: the timer runs whenever the bank is below max and stops (reset) when full.
-// D05: each completed timer adds exactly +1, never above max.
+// D35 (replaces D05): each completed timer refills the bank to max.
 export interface CounterBank {
   max: number;
   count: number;
@@ -30,11 +30,10 @@ export function tickBank(bank: CounterBank, dt: number): void {
     return;
   }
   bank.elapsed += dt;
-  while (bank.elapsed >= bank.duration && bank.count < bank.max) {
-    bank.elapsed -= bank.duration;
-    bank.count++;
+  if (bank.elapsed >= bank.duration) {
+    bank.count = bank.max;
+    bank.elapsed = 0;
   }
-  if (bank.count >= bank.max) bank.elapsed = 0;
 }
 
 // 0..1 progress of the running recharge, for the HUD.
