@@ -124,7 +124,7 @@ export function waveForDay(day: number): WaveRow {
 }
 
 // BALANCE `Upgrade Levels` (D01: all in the demo). Level 0 is the free default.
-// `value` is what the equipped level sets; cost is a one-time unlock, maintenance is per day (D02).
+// `value` is what the highest bought level sets; cost is a one-time unlock. No maintenance (D37).
 export type UpgradeId =
   | 'extraScrubbers'
   | 'clipSize'
@@ -138,7 +138,6 @@ export type UpgradeId =
 export interface UpgradeLevel {
   value: number; // bristles / brush size: 0 = off/default, 1 = on/Supped UP
   cost: number;
-  maintenance: number;
 }
 
 export interface UpgradeDef {
@@ -147,29 +146,29 @@ export interface UpgradeDef {
   levels: UpgradeLevel[];
 }
 
-const levels = (rows: [number, number, number][]): UpgradeLevel[] =>
-  rows.map(([value, cost, maintenance]) => ({ value, cost, maintenance }));
+const levels = (rows: [number, number][]): UpgradeLevel[] => rows.map(([value, cost]) => ({ value, cost }));
 
 export const UPGRADES: UpgradeDef[] = [
-  { id: 'extraScrubbers', name: 'Extra Scrubbers', levels: levels([[1, 0, 0], [2, 10, 3], [3, 15, 6], [4, 20, 9]]) },
-  { id: 'scrubSpeed', name: 'Scrubbing Speed', levels: levels([[3, 0, 0], [2.5, 5, 2], [2, 10, 4], [1.5, 15, 6], [1, 20, 8]]) },
+  { id: 'extraScrubbers', name: 'Extra Scrubbers', levels: levels([[1, 0], [2, 10], [3, 15], [4, 20]]) },
+  // D36: workbook 3/2.5/2/1.5/1 scaled by 5/6.
+  { id: 'scrubSpeed', name: 'Scrubbing Speed', levels: levels([[2.5, 0], [2.1, 5], [1.7, 10], [1.25, 15], [0.85, 20]]) },
   // D30: Brush POWA values doubled (workbook 1/2/3/4).
-  { id: 'brushPowa', name: 'Brush POWA Level', levels: levels([[2, 0, 0], [4, 10, 3], [6, 15, 5], [8, 20, 10]]) },
-  { id: 'brushSize', name: 'Brush Size', levels: levels([[0, 0, 0], [1, 15, 5]]) },
-  { id: 'bristles', name: 'Retractable Bristles', levels: levels([[0, 0, 0], [1, 15, 10]]) },
-  { id: 'timeManipulation', name: 'Time Manipulation', levels: levels([[70, 0, 0], [80, 15, 5], [90, 30, 10], [100, 45, 15]]) },
-  { id: 'clipSize', name: 'Clip Size', levels: levels([[1, 0, 0], [2, 10, 3], [3, 15, 6], [4, 20, 9]]) },
-  { id: 'reloadSpeed', name: 'Reload Speed', levels: levels([[3, 0, 0], [2.5, 5, 2], [2, 10, 4], [1.5, 15, 6], [1, 20, 8]]) },
+  { id: 'brushPowa', name: 'Brush POWA Level', levels: levels([[2, 0], [4, 10], [6, 15], [8, 20]]) },
+  { id: 'brushSize', name: 'Brush Size', levels: levels([[0, 0], [1, 15]]) },
+  { id: 'bristles', name: 'Retractable Bristles', levels: levels([[0, 0], [1, 15]]) },
+  { id: 'timeManipulation', name: 'Time Manipulation', levels: levels([[70, 0], [80, 15], [90, 30], [100, 45]]) },
+  { id: 'clipSize', name: 'Clip Size', levels: levels([[1, 0], [2, 10], [3, 15], [4, 20]]) },
+  { id: 'reloadSpeed', name: 'Reload Speed', levels: levels([[3, 0], [2.5, 5], [2, 10], [1.5, 15], [1, 20]]) },
 ];
 
-// D22: Wax packs, buyable any number of times. No maintenance.
+// D22: Wax packs, buyable any number of times.
 export const WAX_PACKS = [
   { charges: 1, cost: 5 },
   { charges: 2, cost: 8 },
   { charges: 3, cost: 10 },
 ];
 
-// D02: every paid day costs this plus the selected loadout's maintenance.
+// D02/D37: every paid day costs this flat amount.
 export const DAY_BASE_COST = 5;
 
 export const WAX_COLOR = '#F48FB1';

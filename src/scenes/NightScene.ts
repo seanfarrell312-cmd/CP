@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import { waveForDay } from '../rules/config';
 import { MudBoy, NightState, createNight, shootAt, tickNight } from '../rules/nightPhase';
-import { nightOptions, scoreNight } from '../rules/run';
-import { COLORS, FONT } from '../ui';
+import { firstDayIsFree, nightOptions, scoreNight } from '../rules/run';
+import { COLORS, FONT, WIDTH } from '../ui';
 import { MapScene, PANEL } from './MapScene';
 
 const NIGHT_BACKGROUND = 0x14281c;
@@ -21,6 +21,9 @@ export class NightScene extends MapScene {
   private facing: 1 | -1 = 1;
   private sprites = new Map<number, MudBoySprite>();
   private warning?: Phaser.GameObjects.Text;
+  private tip?: Phaser.GameObjects.Text;
+  // D38: Night 1 waits behind the instruction card.
+  private briefing?: Phaser.GameObjects.Container;
   private deniedUntil = 0;
 
   constructor() {
@@ -32,33 +35,57 @@ export class NightScene extends MapScene {
     this.sprites = new Map();
     this.deniedUntil = 0;
     this.facing = 1;
+    this.warning = undefined;
+    this.tip = undefined;
 
     this.setupMap(NIGHT_BACKGROUND);
     this.turret = this.makeTurret();
     this.createHud();
-    this.warning = this.banner('HERE THEY COME!');
+    if (firstDayIsFree(this.run)) {
+      this.briefing = this.makeOverlay('NIGHT TIME!', [
+        'Mud Boys crawl in from the edges and dirty every panel they enter.',
+        'CLICK a Mud Boy with the mouse to fire the turret at it.',
+        'Each shot uses a Shot counter. The Reload bar refills them.',
+        'A hit knocks it back: off the map is a SPLAT!',
+        'At 0 HP it POPs, splashing mud on nearby panels.',
+      ], [['GOT IT', () => this.startNight(), true]]);
+    } else this.startNight();
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.onClick(p));
     this.refresh();
   }
 
+  private startNight() {
+    this.briefing?.destroy();
+    this.briefing = undefined;
+    this.warning = this.banner('HERE THEY COME!');
+    this.tip = this.add
+      .text(WIDTH / 2, this.warning.y + 64, 'Click Mud Boys to shoot!', {
+        fontFamily: FONT, fontSize: '28px', color: '#fff59d', stroke: '#000000', strokeThickness: 6,
+      })
+      .setOrigin(0.5)
+      .setDepth(5);
+  }
+
   update(_time: number, delta: number) {
-    if (this.paused || this.night.ended) return;
+    if (this.paused || this.briefing || this.night.ended) return;
     tickNight(this.night, delta / 1000);
     if (this.night.warningLeft <= 0 && this.warning) {
       this.warning.destroy();
       this.warning = undefined;
+      this.tip?.destroy();
+      this.tip = undefined;
     }
     this.refresh();
     if (this.night.ended) this.endNight();
   }
 
   protected canPause() {
-    return !this.night.ended;
+    return !this.briefing && !this.night.ended;
   }
 
   private onClick(p: Phaser.Input.Pointer) {
-    if (this.paused || this.night.ended) return;
+    if (this.paused || this.briefing || this.night.ended) return;
     const [px, py] = this.panelAt(p.x, p.y);
     const result = shootAt(this.night, px, py);
     if (result === 'hit') this.fire(px);
@@ -212,6 +239,7 @@ export class NightScene extends MapScene {
   // D02/D03: score the whole map into the bank, then the Score screen. A short beat lets the last pop land.
   private endNight() {
     this.warning?.destroy();
+    this.tip?.destroy();
     const powain = scoreNight(this.run);
     this.time.delayedCall(600, () => this.scene.start('Score', { run: this.run, powain }));
   }

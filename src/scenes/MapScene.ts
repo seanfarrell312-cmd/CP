@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { TILE_COLORS, TILES_PER_PANEL_SIDE, WAX_COLOR } from '../rules/config';
 import { CounterBank, rechargeProgress } from '../rules/counterBank';
 import { colorLevel, expectedPowain, getTile, isWaxed } from '../rules/grid';
-import { RunState, equippedValue, newRun } from '../rules/run';
+import { RunState, upgradeValue, newRun } from '../rules/run';
 import { COLORS, FONT, HEIGHT, WIDTH, addButton, hex } from '../ui';
 
 export const HUD_HEIGHT = 96;
@@ -127,15 +127,15 @@ export abstract class MapScene extends Phaser.Scene {
     this.hudLabels[1].setColor(p.shoot ? '#3e2723' : '#a1887f');
     this.hudLabels[2].setText(p.label);
 
-    // The inactive bank shows faded at its equipped size.
-    const scrubMax = equippedValue(this.run, 'extraScrubbers');
-    const shootMax = equippedValue(this.run, 'clipSize');
+    // The inactive bank shows faded at its upgraded size.
+    const scrubMax = upgradeValue(this.run, 'extraScrubbers');
+    const shootMax = upgradeValue(this.run, 'clipSize');
     this.counters(g, 52, p.scrub, scrubMax, COLORS.scrub, 0x1565c0, p.denied);
     this.counters(g, 252, p.shoot, shootMax, COLORS.reload, 0x8e0000, p.denied);
 
     this.bar(g, 480, 44, 260, p.fraction, p.color);
     this.secondsText.setText(`${Math.ceil(p.seconds)}s`);
-    this.powainText.setText(`POWAIN: ${expectedPowain(this.run.map)}`);
+    this.powainText.setText(`POWA-IN: ${expectedPowain(this.run.map)}`);
     this.waxText.setText(p.wax > 0 ? `WAX: ${p.wax}` : '');
   }
 

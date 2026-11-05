@@ -7,7 +7,6 @@ import {
   canSpend,
   canStartDay,
   dayCost,
-  equip,
   resetPurchases,
   firstDayIsFree,
   hasShopChanges,
@@ -56,7 +55,7 @@ function valueLabel(id: UpgradeId, value: number): string {
 // Green when buying keeps enough for the next day (D02 item 6), red when it would be refused.
 const priceColor = (ok: boolean) => (ok ? '#2e7d32' : '#c62828');
 
-// D02/D22/D33/D34: unlock, equip and Wax purchases (undoable), then GET SCRUBBIN! (cost shown, red when short) or TRY AGAIN.
+// D02/D22/D33/D34/D37: unlock and Wax purchases (undoable), then GET SCRUBBIN! (cost shown, red when short) or TRY AGAIN.
 export class UpgradeScene extends Phaser.Scene {
   private run!: RunState;
   private ui?: Phaser.GameObjects.Container;
@@ -127,22 +126,21 @@ export class UpgradeScene extends Phaser.Scene {
     ];
     u.levels.forEach((level, n) => {
       const x = BOX_LEFT + n * (BOX_W + BOX_GAP);
-      const unlocked = n <= run.unlocked[u.id];
-      const equipped = n === run.equipped[u.id];
+      // D37: the highest owned level is the active one; there is nothing to equip.
+      const active = n === run.unlocked[u.id];
+      const owned = n < run.unlocked[u.id];
       const next = n === run.unlocked[u.id] + 1;
-      const sub = unlocked ? (level.maintenance ? `${level.maintenance} / day` : 'free') : `BUY ${level.cost}`;
+      const sub = active ? 'ACTIVE' : owned ? 'owned' : `BUY ${level.cost}`;
       let fill = 0x3a3a3a;
       let color = '#777777';
-      if (equipped) [fill, color] = [0x2e7d32, '#ffffff'];
-      else if (unlocked) [fill, color] = [0x5d6d5e, '#ffffff'];
+      if (active) [fill, color] = [0x2e7d32, '#ffffff'];
+      else if (owned) [fill, color] = [0x5d6d5e, '#c8e6c9'];
       else if (next) [fill, color] = [COLORS.hudBg, '#3e2723'];
       const subColor = next ? priceColor(canSpend(run, level.cost)) : color;
-      items.push(...this.box(x, y, valueLabel(u.id, level.value), sub, fill, color, subColor, equipped, () => {
-        if (unlocked) equip(run, u.id, n);
-        else if (next) this.report(unlockNext(run, u.id));
-        else return;
+      items.push(...this.box(x, y, valueLabel(u.id, level.value), sub, fill, color, subColor, active, () => {
+        this.report(unlockNext(run, u.id));
         this.render();
-      }, unlocked || next));
+      }, next));
     });
     return items;
   }

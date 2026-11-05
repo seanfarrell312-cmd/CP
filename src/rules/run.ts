@@ -18,7 +18,6 @@ export type Levels = Record<UpgradeId, number>;
 export interface Checkpoint {
   bank: number;
   unlocked: Levels;
-  equipped: Levels;
   wax: number;
   day: number;
 }
@@ -32,9 +31,8 @@ export interface RunState {
   px: number;
   py: number;
   bank: number;
-  // Highest unlocked level per upgrade, and the level equipped for the next day (<= unlocked).
+  // Highest bought level per upgrade; it is always the active one (D37).
   unlocked: Levels;
-  equipped: Levels;
   wax: number;
   checkpoint: Checkpoint;
   // What RESET PURCHASES restores (D34): the state when the upgrade screen opened.
@@ -53,7 +51,6 @@ export function newRun(): RunState {
     py: 0,
     bank: 0,
     unlocked: noLevels(),
-    equipped: noLevels(),
     wax: 0,
     checkpoint: undefined!,
     shopStart: undefined!,
@@ -64,7 +61,7 @@ export function newRun(): RunState {
 }
 
 function snapshot(run: RunState): Checkpoint {
-  return { bank: run.bank, unlocked: { ...run.unlocked }, equipped: { ...run.equipped }, wax: run.wax, day: run.day };
+  return { bank: run.bank, unlocked: { ...run.unlocked }, wax: run.wax, day: run.day };
 }
 
 // D13: back to the map-arrival checkpoint with the map reset. On Map 1 that is the fresh game.
@@ -75,18 +72,16 @@ export function tryAgain(run: RunState): void {
   run.py = 0;
   run.bank = c.bank;
   run.unlocked = { ...c.unlocked };
-  run.equipped = { ...c.equipped };
   run.wax = c.wax;
   run.day = c.day;
   run.shopStart = snapshot(run);
 }
 
-// D34: undo every purchase and loadout change made on this upgrade screen.
+// D34: undo every purchase made on this upgrade screen.
 export function resetPurchases(run: RunState): void {
   const s = run.shopStart;
   run.bank = s.bank;
   run.unlocked = { ...s.unlocked };
-  run.equipped = { ...s.equipped };
   run.wax = s.wax;
 }
 
@@ -95,7 +90,7 @@ export function hasShopChanges(run: RunState): boolean {
   return (
     run.bank !== s.bank ||
     run.wax !== s.wax ||
-    UPGRADES.some((u) => run.unlocked[u.id] !== s.unlocked[u.id] || run.equipped[u.id] !== s.equipped[u.id])
+    UPGRADES.some((u) => run.unlocked[u.id] !== s.unlocked[u.id])
   );
 }
 
@@ -108,17 +103,13 @@ export function upgradeDef(id: UpgradeId): UpgradeDef {
   return UPGRADES.find((u) => u.id === id)!;
 }
 
-export function equippedValue(run: RunState, id: UpgradeId): number {
-  return upgradeDef(id).levels[run.equipped[id]].value;
+export function upgradeValue(run: RunState, id: UpgradeId): number {
+  return upgradeDef(id).levels[run.unlocked[id]].value;
 }
 
-export function maintenance(run: RunState): number {
-  return UPGRADES.reduce((sum, u) => sum + u.levels[run.equipped[u.id]].maintenance, 0);
-}
-
-// D02/D33: the number on GET SCRUBBIN!
-export function dayCost(run: RunState): number {
-  return DAY_BASE_COST + maintenance(run);
+// D02/D33/D37: the number on GET SCRUBBIN!, a flat cost with no maintenance.
+export function dayCost(_run: RunState): number {
+  return DAY_BASE_COST;
 }
 
 export function canStartDay(run: RunState): boolean {
@@ -132,7 +123,7 @@ export function canSpend(run: RunState, cost: number): boolean {
   return run.bank - cost >= dayCost(run);
 }
 
-// Unlock the next level (sequential) and equip it.
+// Unlock the next level (sequential); it takes effect from the next day.
 export function unlockNext(run: RunState, id: UpgradeId): PurchaseResult {
   const next = run.unlocked[id] + 1;
   const level = upgradeDef(id).levels[next];
@@ -140,15 +131,7 @@ export function unlockNext(run: RunState, id: UpgradeId): PurchaseResult {
   if (!canSpend(run, level.cost)) return 'must-retain';
   run.bank -= level.cost;
   run.unlocked[id] = next;
-  run.equipped[id] = next;
   return 'bought';
-}
-
-// Equip any unlocked level, including 0 (off). Always allowed; it may turn GET SCRUBBIN! red.
-export function equip(run: RunState, id: UpgradeId, level: number): boolean {
-  if (level < 0 || level > run.unlocked[id]) return false;
-  run.equipped[id] = level;
-  return true;
 }
 
 // D22: Wax packs, repeatable, under the same retain floor as unlocks.
@@ -168,7 +151,7 @@ export function startNextDay(run: RunState): boolean {
   return true;
 }
 
-// D02/D03: end of night, POWAIN for the whole map, rounded down, into the bank.
+// D02/D03: end of night, POWA-IN for the whole map, rounded down, into the bank.
 export function scoreNight(run: RunState): number {
   const powain = expectedPowain(run.map);
   run.bank += powain;
@@ -180,19 +163,19 @@ export function dayOptions(run: RunState): DayOptions {
   return {
     startPx: run.px,
     startPy: run.py,
-    scrubMax: equippedValue(run, 'extraScrubbers'),
-    scrubDuration: equippedValue(run, 'scrubSpeed'),
-    brushPowa: equippedValue(run, 'brushPowa'),
-    aoe: equippedValue(run, 'brushSize') ? BRUSH_AOE_SUPPED_UP : BRUSH_AOE_DEFAULT,
-    bristles: equippedValue(run, 'bristles') === 1,
-    dayLength: equippedValue(run, 'timeManipulation'),
+    scrubMax: upgradeValue(run, 'extraScrubbers'),
+    scrubDuration: upgradeValue(run, 'scrubSpeed'),
+    brushPowa: upgradeValue(run, 'brushPowa'),
+    aoe: upgradeValue(run, 'brushSize') ? BRUSH_AOE_SUPPED_UP : BRUSH_AOE_DEFAULT,
+    bristles: upgradeValue(run, 'bristles') === 1,
+    dayLength: upgradeValue(run, 'timeManipulation'),
     wax: run.wax,
   };
 }
 
 export function nightOptions(run: RunState): NightOptions {
   return {
-    shootMax: equippedValue(run, 'clipSize'),
-    shootDuration: equippedValue(run, 'reloadSpeed'),
+    shootMax: upgradeValue(run, 'clipSize'),
+    shootDuration: upgradeValue(run, 'reloadSpeed'),
   };
 }

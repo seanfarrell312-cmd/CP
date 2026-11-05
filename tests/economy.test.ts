@@ -8,7 +8,6 @@ import {
   canStartDay,
   dayCost,
   dayOptions,
-  equip,
   firstDayIsFree,
   hasShopChanges,
   newRun,
@@ -32,7 +31,7 @@ function earn(run: ReturnType<typeof newRun>, n: number) {
 }
 
 describe('D02 ledger', () => {
-  it('owner example: free Day 1, retain floor, day cost with maintenance, red when short', () => {
+  it('owner example: free Day 1, retain floor, flat day cost (D37), red when short', () => {
     const run = newRun();
     expect(run.bank).toBe(0);
     expect(firstDayIsFree(run)).toBe(true);
@@ -45,32 +44,27 @@ describe('D02 ledger', () => {
 
     earn(run, 12);
     expect(run.bank).toBe(13);
-    expect(unlockNext(run, 'reloadSpeed')).toBe('bought'); // equips L1
+    expect(unlockNext(run, 'reloadSpeed')).toBe('bought');
     expect(run.bank).toBe(8);
-    expect(dayCost(run)).toBe(7);
+    expect(dayCost(run)).toBe(5); // no maintenance
     startNextDay(run);
-    expect(run.bank).toBe(1);
+    expect(run.bank).toBe(3);
 
-    earn(run, 3);
+    earn(run, 1);
     expect(run.bank).toBe(4);
     expect(canStartDay(run)).toBe(false);
     expect(startNextDay(run)).toBe(false);
     expect(run.bank).toBe(4);
-    equip(run, 'reloadSpeed', 0);
-    expect(dayCost(run)).toBe(5); // still red: 4 < 5
-    expect(canStartDay(run)).toBe(false);
   });
 
-  it('levels unlock in order; equipping any unlocked level is always allowed', () => {
+  it('levels unlock in order; the highest bought level is active', () => {
     const run = newRun();
     run.bank = 100;
     expect(unlockNext(run, 'timeManipulation')).toBe('bought');
     expect(unlockNext(run, 'timeManipulation')).toBe('bought');
     expect(run.bank).toBe(55); // 15 + 30, one-time costs
-    expect(dayCost(run)).toBe(15); // L2 maintenance 10 replaces L1's
-    expect(equip(run, 'timeManipulation', 3)).toBe(false);
-    expect(equip(run, 'timeManipulation', 1)).toBe(true);
-    expect(dayOptions(run).dayLength).toBe(80);
+    expect(dayCost(run)).toBe(5);
+    expect(dayOptions(run).dayLength).toBe(90);
     expect(unlockNext(run, 'bristles')).toBe('bought');
     expect(unlockNext(run, 'bristles')).toBe('max-level');
   });
@@ -94,7 +88,7 @@ describe('D02 ledger', () => {
       unlockNext(run, id);
     }
     const d = dayOptions(run);
-    expect([d.scrubMax, d.scrubDuration, d.brushPowa, d.aoe]).toEqual([2, 2.5, 4, BRUSH_AOE_SUPPED_UP]);
+    expect([d.scrubMax, d.scrubDuration, d.brushPowa, d.aoe]).toEqual([2, 2.1, 4, BRUSH_AOE_SUPPED_UP]);
     expect(nightOptions(run)).toEqual({ shootMax: 2, shootDuration: 2.5 });
   });
 });
@@ -108,7 +102,7 @@ describe('D13 TRY AGAIN', () => {
     run.px = 4;
     for (let i = 0; i < 2; i++) {
       tryAgain(run);
-      expect([run.bank, run.day, run.px, run.wax, run.unlocked.clipSize, run.equipped.clipSize]).toEqual([0, 1, 0, 0, 0, 0]);
+      expect([run.bank, run.day, run.px, run.wax, run.unlocked.clipSize]).toEqual([0, 1, 0, 0, 0]);
       expect(run.map.tiles.every((v) => v === 0)).toBe(true);
       expect(firstDayIsFree(run)).toBe(true);
     }
@@ -154,22 +148,19 @@ describe('Wax and Retractable Bristles (D30: +8)', () => {
 });
 
 describe('RESET PURCHASES (D34)', () => {
-  it('restores the bank, unlocks and loadout from when the night was scored', () => {
+  it('restores the bank and unlocks from when the night was scored', () => {
     const run = newRun();
     earn(run, 23);
     expect(hasShopChanges(run)).toBe(false);
-    // 23 - 5 - 10 = 8 left, but the new loadout costs 5 + 2 + 3 = 10: stuck without a reset.
     expect(unlockNext(run, 'scrubSpeed')).toBe('bought');
     expect(unlockNext(run, 'extraScrubbers')).toBe('bought');
-    expect(canStartDay(run)).toBe(false);
+    expect(run.bank).toBe(8);
     expect(hasShopChanges(run)).toBe(true);
 
     resetPurchases(run);
     expect(run.bank).toBe(23);
     expect(run.unlocked.extraScrubbers).toBe(0);
-    expect(run.equipped.extraScrubbers).toBe(0);
     expect(run.unlocked.scrubSpeed).toBe(0);
-    expect(canStartDay(run)).toBe(true);
     expect(hasShopChanges(run)).toBe(false);
   });
 
@@ -179,10 +170,9 @@ describe('RESET PURCHASES (D34)', () => {
     unlockNext(run, 'extraScrubbers');
     startNextDay(run);
     const bank = run.bank + earn(run, 10);
-    equip(run, 'extraScrubbers', 0);
+    buyWax(run, 0);
     resetPurchases(run);
-    expect(run.bank).toBe(bank);
+    expect([run.bank, run.wax]).toEqual([bank, 0]);
     expect(run.unlocked.extraScrubbers).toBe(1);
-    expect(run.equipped.extraScrubbers).toBe(1);
   });
 });

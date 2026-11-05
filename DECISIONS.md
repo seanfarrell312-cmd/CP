@@ -18,7 +18,7 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** The "levels are unlocked sequentially" rule (GDD/master handoff §8) does not apply to Wax. BALANCE `Upgrade Levels` WAX rows are read as pack sizes and pack prices, not levels.
 **Test:** Starting with 0 charges and 30 POWA, buy L3 then L1 (cost 15, stock 4). Use 1 Wax during the day (stock 3). On the next upgrade screen buy L2 (stock 5). L3 can be bought again without any unlock step.
 
-### D02: POWA ledger (confirmed 2026-10-25)
+### D02: POWA ledger (confirmed 2026-10-25; maintenance and equipping removed by D37)
 **Decision (owner's words, structured):**
 1. Banked POWA starts at 0 at the start of the game. Day 1 is free.
 2. At the end of each night, POWAIN is calculated from panel cleanliness (BALANCE `POWA conversion`) and added to Banked POWA.
@@ -196,9 +196,29 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** D05 (+1 per completion). Matches the BALANCE `Upgrade definitions` wording "increases the number of counters provided when timer reaches 0".
 **Test:** Clip Size L3 (max 4), Reload 3 s. Fire 3 shots (1 left) → after 3 s, 4 stored. Fire 1 at t=0 and 2 more at t=2 → at t=3, 4 stored.
 
+### D36: Faster Scrubbing Speed (confirmed 2026-11-05, from play test 4)
+**Decision:** The default Scrub timer is **2.5 s** (was 3 s). The other Scrubbing Speed levels scale by the same factor (about 5/6): **2.5 / 2.1 / 1.7 / 1.25 / 0.85 s** for levels 0-4. Costs are unchanged. Reload Speed is unchanged (3 / 2.5 / 2 / 1.5 / 1 s).
+**Overrides:** BALANCE `Upgrade Levels` Scrubbing Speed values 3 / 2.5 / 2 / 1.5 / 1 s.
+**Test:** New game Day 1: a spent Scrub counter returns after 2.5 s. Buying Scrubbing Speed L1 makes it 2.1 s.
+
+### D37: No maintenance and no equipping (confirmed 2026-11-05, from play test 4)
+**Decision:** Upgrades have **no daily maintenance**. Every paid day costs a flat **5 POWA**, the number shown on GET SCRUBBIN!. A bought level is always active from the next day; there is no equip or unequip step, and the upgrade screen shows the highest owned level as **ACTIVE**, lower levels as **owned**, and the next level as **BUY cost**. The MUST RETAIN floor (D02 item 6) is now simply 5 POWA after paying, for unlocks and Wax packs alike. RESET PURCHASES (D34) still undoes the screen's purchases.
+**Overrides:** D02 items 3-6 (equipping, "5 + maintenance", unequipping to turn the button green), D33's "5 + maintenance", and BALANCE `Upgrade Levels` Maintenance column.
+**Test:** Bank 13, buy Reload Speed L1 (5) → bank 8, GET SCRUBBIN! 5 green. Bank 9 → buying a 5-cost level is refused (4 < 5).
+
+### D38: Night instructions (confirmed 2026-11-05, from play test 4)
+**Decision:** Night 1 on Map 1 opens **paused** behind a NIGHT TIME! card: Mud Boys come from the edges and dirty panels; click a Mud Boy with the mouse to fire the turret; each shot uses a Shot counter and the Reload bar refills them; a hit knocks it back (off the map is a SPLAT!); at 0 HP it POPs and splashes nearby panels. **GOT IT** closes the card and starts the night with HERE THEY COME!. Every night also shows "Click Mud Boys to shoot!" under HERE THEY COME! during the warning.
+**Overrides:** Nothing; adds onboarding the GDD did not specify.
+**Test:** Night 1: the card shows, the clock and Mud Boys wait, clicks do nothing until GOT IT. Night 2: no card, the hint line shows for 2 s.
+
+### D39: POWA-IN label (confirmed 2026-11-05, from play test 4)
+**Decision:** The player-facing label "POWAIN" is written **POWA-IN** (POWA in to the grid: upgrade points earned) on the day/night HUD and the Score screen. Rules text may keep the internal name.
+**Overrides:** GDD/RULES on-screen label "POWAIN".
+**Test:** The HUD shows "POWA-IN: n"; the Score screen shows "POWA-IN: +n".
+
 ## Still open
 
-- Upgrade pacing: step 3 uses the BALANCE `Upgrade Levels` costs as-is (Brush POWA values per D30). Owner to judge in play testing whether upgrades max out too quickly with D30 income; a possible fix is more levels per upgrade.
+- Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play test 4 found Map 1 can be finished by Day 7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Owner chose to keep Map 1 as a short intro and judge after Map 2 is built; ideas on the table: per-map upgrade caps, daily dust settling, higher top-level prices.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
 - Night-phase derived details (step 2 build), flagged for owner review:
   - A Mud Boy "reaches the far edge" when its forward action would take it off the map; it pops on the edge panel it is standing on (same as the D10 push-off rule).
@@ -206,8 +226,7 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
   - A wave spawns only on edge panels not already occupied (Mud Boys never share a panel, D10); if fewer free panels than Mud Boys remain, the extras do not spawn.
   - Mud Boys still on the map when the Night clock hits 0 simply leave, with no pop and no dirt.
 - Upgrade-screen derived details (step 3 build), flagged for owner review:
-  - Buying a level also equips it; the player can click any lower unlocked level (or the free default) to dial back down.
-  - The D02 `MUST RETAIN` floor (bank after paying ≥ 5 + selected maintenance) applies to Wax packs as well as unlocks.
+  - The D02 `MUST RETAIN` floor (bank after paying ≥ 5, D37) applies to Wax packs as well as unlocks.
   - BUY prices are green when the purchase would be allowed and red when it would be refused.
   - TRY AGAIN asks for confirmation before restoring the checkpoint.
   - Entering a +8 panel without Retractable Bristles still costs a Scrub counter (the panel stays at +8).

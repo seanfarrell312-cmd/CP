@@ -69,19 +69,21 @@ describe('upgrade levels', () => {
     return out;
   }
 
-  it('costs and maintenance match the workbook; values match except Brush POWA (D30 doubles it)', () => {
+  it('costs match the workbook; values match except Brush POWA (D30 x2) and Scrubbing Speed (D36 x5/6)', () => {
     const [scrubbers, clip, wax, bristles, time, reload, scrub, brush, size] = blocks();
     const byId = Object.fromEntries(UPGRADES.map((u) => [u.id, u.levels]));
     const pairs = { extraScrubbers: scrubbers, clipSize: clip, bristles, timeManipulation: time,
       reloadSpeed: reload, scrubSpeed: scrub, brushPowa: brush, brushSize: size };
     for (const [id, rows] of Object.entries(pairs)) {
-      expect(byId[id].map((l) => [l.cost, l.maintenance])).toEqual(rows.map((r) => [Number(r[2]), Number(r[3])]));
+      expect(byId[id].map((l) => l.cost)).toEqual(rows.map((r) => Number(r[2])));
       const numeric = rows.every((r) => !isNaN(Number(r[1])));
-      if (numeric) {
+      if (numeric && id !== 'scrubSpeed') {
         const scale = id === 'brushPowa' ? 2 : 1;
         expect(byId[id].map((l) => l.value)).toEqual(rows.map((r) => Number(r[1]) * scale));
       }
     }
+    // D36: the workbook's 3/2.5/2/1.5/1 s scaled by about 5/6, as confirmed by the owner.
+    expect(byId.scrubSpeed.map((l) => l.value)).toEqual([2.5, 2.1, 1.7, 1.25, 0.85]);
     expect(WAX_PACKS).toEqual(wax.slice(1).map((r) => ({ charges: Number(r[1]), cost: Number(r[2]) })));
   });
 });
