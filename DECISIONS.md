@@ -80,7 +80,7 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Test:** Arrive at Map 2 on day 14 with 20 POWA, Reload L2 and 2 Wax. Play to day 18, get stranded. TRY AGAIN → day 14, 20 POWA, Reload L2, 2 Wax, Map 2 dirty. Repeating TRY AGAIN gives the same state every time.
 
 ### D15: Victory check cadence (confirmed 2026-10-25)
-**Decision:** Map victory (every panel rated +4) is checked **immediately after each Scrubby move resolves its cleaning**, and triggers at most once per map.
+**Decision:** Map victory (every panel rated +4, now +8 per D30) is checked **immediately after each Scrubby move resolves its cleaning**, and triggers at most once per map.
 **Overrides:** MAPS end-of-day fallback. Supersedes PENDING item 15.
 **Test:** Last panel reaches +4 with 30 s of Daylight left → victory triggers on that move, once.
 
@@ -234,3 +234,9 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
   - BUY prices are green when the purchase would be allowed and red when it would be refused.
   - TRY AGAIN asks for confirmation before restoring the checkpoint.
   - Entering a +8 panel without Retractable Bristles still costs a Scrub counter (the panel stays at +8).
+- Step 4 derived details (victory and Map 2 build), flagged for owner review:
+  - The winning move shows SPOTLESS! for 1.5 s, then the Score screen ("Map N is SPOTLESS! No night tonight.", POWA-IN +400 / +2,500), then MAP 1 COMPLETE! with NEXT MAP, or after Map 2 the THANK YOU FOR PLAYING! screen (day reached, POWA banked, PLAY AGAIN for a fresh game, TITLE).
+  - The day number does not change on NEXT MAP; Map 2's upgrade screen shows the day Map 1 was won, and GET SCRUBBIN! starts the next day number with the READY / SET / SCRUB! countdown (no waiting first-move clock).
+  - Scrubby starts Map 2 on P(0,0). Wax charges carry over; panels waxed on Map 1 do not (the new map starts unwaxed at 0).
+  - Map 2 by day: the camera follows Scrubby, clamped so the map edge never leaves a gap. By night: the view zooms to about 0.45x so the whole 25 x 25 map, turret and SPLAT! margins fit; Mud Boys are smaller but clickable.
+  - RESET PURCHASES on Map 2's first upgrade screen goes back to the arrival state (the same state TRY AGAIN restores).

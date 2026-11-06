@@ -146,6 +146,26 @@ export function scoreNight(run: RunState): number {
   return powain;
 }
 
+// D23: a mid-day victory skips the night and pays the clean map once (400 on Map 1, 2,500 on Map 2).
+export function claimVictory(run: RunState): number {
+  return scoreNight(run);
+}
+
+export function isLastMap(run: RunState): boolean {
+  return run.mapIndex === MAPS.length - 1;
+}
+
+// NEXT MAP: purchases, POWA, Wax and the day number carry over; the new map starts dirty
+// with Scrubby on P(0,0), and this arrival becomes the TRY AGAIN checkpoint (D13).
+export function nextMap(run: RunState): void {
+  run.mapIndex++;
+  run.map = createMap(MAPS[run.mapIndex]);
+  run.px = 0;
+  run.py = 0;
+  run.checkpoint = snapshot(run);
+  run.shopStart = snapshot(run);
+}
+
 export function dayOptions(run: RunState): DayOptions {
   return {
     startPx: run.px,

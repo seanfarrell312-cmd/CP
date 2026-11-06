@@ -39,6 +39,7 @@ export class NightScene extends MapScene {
     this.tip = undefined;
 
     this.setupMap(NIGHT_BACKGROUND);
+    this.fitBigMap();
     this.turret = this.makeTurret();
     this.createHud();
     if (firstDayIsFree(this.run)) {
@@ -59,10 +60,9 @@ export class NightScene extends MapScene {
     this.briefing?.destroy();
     this.briefing = undefined;
     this.warning = this.banner('HERE THEY COME!');
-    this.tip = this.add
-      .text(WIDTH / 2, this.warning.y + 64, 'Click Mud Boys to shoot!', {
-        fontFamily: FONT, fontSize: '28px', color: '#fff59d', stroke: '#000000', strokeThickness: 6,
-      })
+    this.tip = this.uiText(WIDTH / 2, this.warning.y + 64, 'Click Mud Boys to shoot!', {
+      fontFamily: FONT, fontSize: '28px', color: '#fff59d', stroke: '#000000', strokeThickness: 6,
+    })
       .setOrigin(0.5)
       .setDepth(5);
   }
@@ -86,7 +86,7 @@ export class NightScene extends MapScene {
 
   private onClick(p: Phaser.Input.Pointer) {
     if (this.paused || this.briefing || this.night.ended) return;
-    const [px, py] = this.panelAt(p.x, p.y);
+    const [px, py] = this.panelAt(...this.worldPoint(p));
     const result = shootAt(this.night, px, py);
     if (result === 'hit') this.fire(px);
     else if (result === 'no-counter') this.deniedUntil = this.time.now + 250;

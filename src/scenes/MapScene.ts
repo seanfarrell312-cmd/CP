@@ -11,6 +11,8 @@ const GUTTER = 4;
 const TILE = (PANEL - GUTTER) / TILES_PER_PANEL_SIDE;
 // Room between the HUD and the map for the night turret.
 const TURRET_MARGIN = 60;
+// World space kept around the map for the turret, SPLAT! text and camera edges.
+const WORLD_PAD = 40;
 
 const TILE_FILL: Record<number, number> = Object.fromEntries(
   Object.entries(TILE_COLORS).map(([level, color]) => [level, hex(color)]),
@@ -31,12 +33,15 @@ export interface PhaseHud {
 const WAX_FILL = hex(WAX_COLOR);
 
 // Shared by the Day and Night scenes: map drawing, the HUD, pause and overlays.
+// Two cameras: the main one shows the map below the HUD and can follow or zoom (D27);
+// a fixed UI camera on top draws the HUD, banners and overlays.
 export abstract class MapScene extends Phaser.Scene {
   protected run!: RunState;
   protected mapX = 0;
   protected mapY = 0;
   protected overlay?: Phaser.GameObjects.Container;
   protected paused = false;
+  private uiCamera!: Phaser.Cameras.Scene2D.Camera;
   private tiles!: Phaser.GameObjects.Graphics;
   private hud!: Phaser.GameObjects.Graphics;
   private hudLabels: Phaser.GameObjects.Text[] = [];
@@ -54,7 +59,16 @@ export abstract class MapScene extends Phaser.Scene {
 
   protected setupMap(background: number) {
     const { map } = this.run;
-    this.cameras.main.setBackgroundColor(background);
+    const main = this.cameras.main;
+    main.setBackgroundColor(background);
+    main.setViewport(0, HUD_HEIGHT, WIDTH, HEIGHT - HUD_HEIGHT);
+    main.setScroll(0, HUD_HEIGHT);
+    // Everything added from here on is map world unless handed to toUi().
+    this.uiCamera = this.cameras.add(0, 0, WIDTH, HEIGHT);
+    const toWorld = (go: Phaser.GameObjects.GameObject) => this.uiCamera.ignore(go);
+    this.events.on(Phaser.Scenes.Events.ADDED_TO_SCENE, toWorld);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.ADDED_TO_SCENE, toWorld));
+
     this.mapX = Math.round((WIDTH - map.panelsX * PANEL) / 2);
     this.mapY = HUD_HEIGHT + TURRET_MARGIN;
     this.add
@@ -75,6 +89,50 @@ export abstract class MapScene extends Phaser.Scene {
   }
 
   protected onKey(_event: KeyboardEvent) {}
+
+  // Draw with the fixed UI camera only (containers include their children).
+  protected toUi<T extends Phaser.GameObjects.GameObject>(go: T): T {
+    go.cameraFilter = this.cameras.main.id;
+    if (go instanceof Phaser.GameObjects.Container) go.list.forEach((child) => this.toUi(child));
+    return go;
+  }
+
+  // Map 1 fits on screen; Map 2 needs the D27 camera.
+  protected mapFits(): boolean {
+    const { map } = this.run;
+    return map.panelsX * PANEL + 2 * WORLD_PAD <= WIDTH && TURRET_MARGIN + map.panelsY * PANEL + WORLD_PAD <= HEIGHT - HUD_HEIGHT;
+  }
+
+  private worldBounds(): Phaser.Geom.Rectangle {
+    const { map } = this.run;
+    return new Phaser.Geom.Rectangle(
+      this.mapX - WORLD_PAD, HUD_HEIGHT, map.panelsX * PANEL + 2 * WORLD_PAD, TURRET_MARGIN + map.panelsY * PANEL + WORLD_PAD,
+    );
+  }
+
+  // D27 day view: follow Scrubby, clamped to the map.
+  protected followOnBigMap(target: Phaser.GameObjects.Container) {
+    if (this.mapFits()) return;
+    const b = this.worldBounds();
+    const main = this.cameras.main;
+    main.setBounds(b.x, b.y, b.width, b.height);
+    main.startFollow(target, true, 0.2, 0.2);
+  }
+
+  // D27 night view: zoom out until the whole map and its margins fit.
+  protected fitBigMap() {
+    if (this.mapFits()) return;
+    const b = this.worldBounds();
+    const main = this.cameras.main;
+    main.setZoom(Math.min(main.width / b.width, main.height / b.height));
+    main.centerOn(b.centerX, b.centerY);
+  }
+
+  // Pointer position in map-world coordinates.
+  protected worldPoint(p: Phaser.Input.Pointer): [number, number] {
+    const w = this.cameras.main.getWorldPoint(p.x, p.y);
+    return [w.x, w.y];
+  }
 
   protected drawTiles() {
     const { map } = this.run;
@@ -103,18 +161,17 @@ export abstract class MapScene extends Phaser.Scene {
 
   protected createHud() {
     const label = (x: number, y: number, text: string) =>
-      this.add.text(x, y, text, { fontFamily: FONT, fontSize: '20px', color: '#3e2723' });
+      this.uiText(x, y, text, { fontFamily: FONT, fontSize: '20px', color: '#3e2723' });
 
-    this.add.rectangle(0, 0, WIDTH, HUD_HEIGHT, COLORS.hudBg).setOrigin(0).setStrokeStyle(6, COLORS.hudEdge);
-    this.hud = this.add.graphics();
+    this.toUi(this.add.rectangle(0, 0, WIDTH, HUD_HEIGHT, COLORS.hudBg).setOrigin(0).setStrokeStyle(6, COLORS.hudEdge));
+    this.hud = this.toUi(this.add.graphics());
     this.hudLabels = [label(40, 12, 'Scrubber'), label(240, 12, 'Reload'), label(480, 12, '')];
     this.secondsText = label(760, 40, '');
     this.powainText = label(940, 14, '');
     label(940, 52, `DAY: ${this.run.day}`);
     this.waxText = label(1080, 52, '');
 
-    const pause = this.add
-      .text(WIDTH - 40, HUD_HEIGHT / 2, 'II', { fontFamily: FONT, fontSize: '28px', color: '#3e2723' })
+    const pause = this.uiText(WIDTH - 40, HUD_HEIGHT / 2, 'II', { fontFamily: FONT, fontSize: '28px', color: '#3e2723' })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     pause.on('pointerup', () => this.canPause() && this.togglePause());
@@ -213,20 +270,23 @@ export abstract class MapScene extends Phaser.Scene {
     buttons.forEach(([label, onClick, enabled], i) =>
       items.push(addButton(this, WIDTH / 2, top + i * 76, label, onClick, enabled)),
     );
-    return this.add.container(0, 0, items).setDepth(10);
+    return this.toUi(this.add.container(0, 0, items).setDepth(10));
   }
 
-  // Big centred message over the map (HERE THEY COME!, READY / SET / SCRUB!).
+  // Big message centred in the map view (HERE THEY COME!, READY / SET / SCRUB!).
   protected banner(text: string): Phaser.GameObjects.Text {
-    return this.add
-      .text(WIDTH / 2, this.mapY + (this.run.map.panelsY * PANEL) / 2, text, {
-        fontFamily: FONT,
-        fontSize: '72px',
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 10,
-      })
+    return this.uiText(WIDTH / 2, HUD_HEIGHT + (HEIGHT - HUD_HEIGHT) / 2, text, {
+      fontFamily: FONT,
+      fontSize: '72px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 10,
+    })
       .setOrigin(0.5)
       .setDepth(5);
+  }
+
+  protected uiText(x: number, y: number, text: string, style: Phaser.Types.GameObjects.Text.TextStyle) {
+    return this.toUi(this.add.text(x, y, text, style));
   }
 }

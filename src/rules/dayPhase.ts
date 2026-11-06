@@ -1,6 +1,6 @@
 import { BRUSH_AOE_DEFAULT, BrushAoe, DEFAULT_BRUSH_POWA, DEFAULT_SCRUB_MAX, TILE_MAX, TIMERS } from './config';
 import { CounterBank, createBank, spend, tickBank } from './counterBank';
-import { MapState, applyBrush, inBounds, isWaxed, panelRating } from './grid';
+import { MapState, applyBrush, inBounds, isFullyClean, isWaxed, panelRating } from './grid';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -23,6 +23,8 @@ export interface DayState {
   // Day 1: the clock waits for the first valid move.
   started: boolean;
   ended: boolean;
+  // D15: set by the move that makes every panel +8; the day ends there.
+  victory: boolean;
 }
 
 export interface DayOptions {
@@ -53,6 +55,7 @@ export function createDay(map: MapState, opts: DayOptions = {}): DayState {
     timeLeft: dayLength,
     started: opts.startedImmediately ?? false,
     ended: false,
+    victory: false,
   };
 }
 
@@ -76,8 +79,12 @@ export function tryMove(day: DayState, dir: Direction): MoveResult {
   if (!free && !spend(day.scrub)) return 'no-counter';
   day.px = nx;
   day.py = ny;
-  if (!free) applyBrush(day.map, nx, ny, day.brushPowa, day.aoe);
   day.started = true;
+  if (!free) {
+    applyBrush(day.map, nx, ny, day.brushPowa, day.aoe);
+    // D15/D23: checked after each scrub; victory stops the clock at once.
+    if (isFullyClean(day.map)) day.victory = day.ended = true;
+  }
   return free ? 'glided' : 'moved';
 }
 

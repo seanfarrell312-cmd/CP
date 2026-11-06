@@ -5,6 +5,9 @@ import { createMap, isWaxed, panelRating } from '../src/rules/grid';
 import { createNight, mudBoyAt, tickNight } from '../src/rules/nightPhase';
 import {
   buyWax,
+  claimVictory,
+  isLastMap,
+  nextMap,
   dayOptions,
   firstDayIsFree,
   hasShopChanges,
@@ -163,3 +166,62 @@ describe('RESET PURCHASES (D34)', () => {
     expect(run.unlocked.extraScrubbers).toBe(1);
   });
 });
+
+// Every tile +8 except panel (px, py), whose tiles are set to `rest`.
+function nearlyClean(run: ReturnType<typeof newRun>, px: number, py: number, rest: number) {
+  const { tiles, tilesX } = run.map;
+  tiles.fill(8);
+  for (let ly = 0; ly < 4; ly++) for (let lx = 0; lx < 4; lx++) tiles[(py * 4 + ly) * tilesX + px * 4 + lx] = rest;
+}
+
+describe('map victory and Map 2 (D15, D23, D13)', () => {
+  it('the scrub that makes every panel +8 wins at once and stops the clock', () => {
+    const run = newRun();
+    nearlyClean(run, 3, 0, 6);
+    const day = createDay(run.map, { startPx: 2, aoe: BRUSH_AOE_SUPPED_UP, startedImmediately: true });
+    tickDay(day, 10);
+    expect(tryMove(day, 'right')).toBe('moved');
+    expect([day.victory, day.ended]).toEqual([true, true]);
+    const left = day.timeLeft;
+    tickDay(day, 5);
+    expect(day.timeLeft).toBe(left);
+    expect(tryMove(day, 'right')).toBe('day-over');
+    expect(claimVictory(run)).toBe(400);
+    expect(run.bank).toBe(400);
+  });
+
+  it('a scrub that leaves a panel below +8 does not win', () => {
+    const run = newRun();
+    nearlyClean(run, 3, 0, 6);
+    const day = createDay(run.map, { startPx: 2, startedImmediately: true }); // default brush: borders reach only +7
+    tryMove(day, 'right');
+    expect(day.victory).toBe(false);
+  });
+
+  it('NEXT MAP keeps POWA, upgrades, Wax and day; TRY AGAIN on Map 2 returns to that arrival', () => {
+    const run = newRun();
+    run.bank = 450;
+    unlockNext(run, 'reloadSpeed');
+    unlockNext(run, 'reloadSpeed');
+    run.wax = 2;
+    run.day = 6;
+    run.px = 5;
+    nextMap(run);
+    expect([run.mapIndex, run.map.panelsX, run.px, run.py, run.day, run.bank, run.wax]).toEqual([1, 25, 0, 0, 6, 435, 2]);
+    expect(run.map.tiles.every((v) => v === 0)).toBe(true);
+    expect(isLastMap(run)).toBe(true);
+    expect(firstDayIsFree(run)).toBe(false);
+
+    unlockNext(run, 'clipSize');
+    startNextDay(run);
+    earn2(run);
+    tryAgain(run);
+    expect([run.day, run.bank, run.wax, run.unlocked.reloadSpeed, run.unlocked.clipSize]).toEqual([6, 435, 2, 2, 0]);
+    expect(run.map.tiles.every((v) => v === 0)).toBe(true);
+  });
+});
+
+function earn2(run: ReturnType<typeof newRun>) {
+  run.map.tiles.fill(2);
+  scoreNight(run);
+}

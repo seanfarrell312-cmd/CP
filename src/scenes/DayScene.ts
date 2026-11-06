@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { READY_COUNTDOWN } from '../rules/config';
 import { DayState, Direction, createDay, tickDay, tryMove, tryWax } from '../rules/dayPhase';
-import { dayOptions, firstDayIsFree } from '../rules/run';
+import { claimVictory, dayOptions, firstDayIsFree } from '../rules/run';
 import { COLORS, FONT, HEIGHT, WIDTH } from '../ui';
 import { MapScene } from './MapScene';
 
@@ -34,19 +34,18 @@ export class DayScene extends MapScene {
     this.setupMap(COLORS.grass);
     this.scrubby = this.makeScrubby();
     this.placeScrubby(false);
+    this.followOnBigMap(this.scrubby);
     this.createHud();
 
     if (firstDayIsFree(run)) {
       // Day 1: the clock waits for the first valid move.
-      this.hint = this.add
-        .text(WIDTH / 2, HEIGHT - 4, 'Press W A S D to move and scrub. The day starts on your first move.', {
-          fontFamily: FONT,
-          fontSize: '18px',
-          color: '#ffffff',
-          stroke: '#000000',
-          strokeThickness: 4,
-        })
-        .setOrigin(0.5, 1);
+      this.hint = this.uiText(WIDTH / 2, HEIGHT - 4, 'Press W A S D to move and scrub. The day starts on your first move.', {
+        fontFamily: FONT,
+        fontSize: '18px',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 4,
+      }).setOrigin(0.5, 1);
     } else {
       // Later days open with READY / SET / SCRUB!; the clock and input start together.
       this.countdown = READY_COUNTDOWN;
@@ -97,6 +96,17 @@ export class DayScene extends MapScene {
       this.deniedUntil = this.time.now + 250;
     }
     this.refreshHud();
+    if (this.day.victory) this.win();
+  }
+
+  // D15/D23: the map is spotless. Clocks are already stopped; skip the night and pay the clean map once.
+  private win() {
+    this.run.px = this.day.px;
+    this.run.py = this.day.py;
+    this.run.wax = this.day.wax;
+    const powain = claimVictory(this.run);
+    this.banner('SPOTLESS!');
+    this.time.delayedCall(1500, () => this.scene.start('Score', { run: this.run, powain, victory: true }));
   }
 
   private refreshHud() {
