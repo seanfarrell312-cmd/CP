@@ -5,8 +5,6 @@ import {
   RunState,
   buyWax,
   canSpend,
-  canStartDay,
-  dayCost,
   resetPurchases,
   firstDayIsFree,
   hasShopChanges,
@@ -52,10 +50,10 @@ function valueLabel(id: UpgradeId, value: number): string {
   }
 }
 
-// Green when buying keeps enough for the next day (D02 item 6), red when it would be refused.
+// Green when the bank covers the price, red when it doesn't.
 const priceColor = (ok: boolean) => (ok ? '#2e7d32' : '#c62828');
 
-// D02/D22/D33/D34/D37: unlock and Wax purchases (undoable), then GET SCRUBBIN! (cost shown, red when short) or TRY AGAIN.
+// D02/D22/D34/D37/D40: unlock and Wax purchases (undoable), then GET SCRUBBIN! (free) or TRY AGAIN.
 export class UpgradeScene extends Phaser.Scene {
   private run!: RunState;
   private ui?: Phaser.GameObjects.Container;
@@ -93,25 +91,11 @@ export class UpgradeScene extends Phaser.Scene {
     UPGRADES.forEach((u, i) => items.push(...this.upgradeRow(u, ROW_TOP + i * ROW_HEIGHT)));
     items.push(...this.waxRow(ROW_TOP + UPGRADES.length * ROW_HEIGHT));
 
-    const cost = dayCost(run);
-    const affordable = canStartDay(run);
-    const go = this.add
-      .text(WIDTH / 2 + 170, HEIGHT - 50, `GET SCRUBBIN!  ${cost}`, {
-        fontFamily: FONT,
-        fontSize: '30px',
-        color: '#ffffff',
-        backgroundColor: affordable ? '#2e7d32' : '#c62828',
-        padding: { x: 24, y: 10 },
-      })
-      .setOrigin(0.5);
-    if (affordable) {
-      go.setInteractive({ useHandCursor: true });
-      go.on('pointerover', () => go.setBackgroundColor('#43a047'));
-      go.on('pointerout', () => go.setBackgroundColor('#2e7d32'));
-      go.on('pointerup', () => {
-        if (startNextDay(run)) this.scene.start('Day', { run });
-      });
-    }
+    // D40: starting the next day is free.
+    const go = addButton(this, WIDTH / 2 + 170, HEIGHT - 50, 'GET SCRUBBIN!', () => {
+      startNextDay(run);
+      this.scene.start('Day', { run });
+    });
     items.push(go);
     items.push(addButton(this, WIDTH / 2 - 230, HEIGHT - 50, 'TRY AGAIN', () => this.confirmTryAgain()));
 
@@ -183,12 +167,12 @@ export class UpgradeScene extends Phaser.Scene {
     ];
   }
 
-  // D02 item 6: a refused purchase explains the floor.
+  // A refused purchase says why.
   private report(result: PurchaseResult) {
-    if (result !== 'must-retain') return;
+    if (result !== 'too-expensive') return;
     this.message?.destroy();
     this.message = this.add
-      .text(WIDTH / 2, HEIGHT - 104, `MUST RETAIN ${dayCost(this.run)} POWA to start the next day`, {
+      .text(WIDTH / 2, HEIGHT - 104, 'NOT ENOUGH BANKED POWA', {
         fontFamily: FONT, fontSize: '22px', color: '#ff8a80', stroke: '#000000', strokeThickness: 4,
       })
       .setOrigin(0.5)

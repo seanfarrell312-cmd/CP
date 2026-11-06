@@ -216,9 +216,14 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** GDD/RULES on-screen label "POWAIN".
 **Test:** The HUD shows "POWA-IN: n"; the Score screen shows "POWA-IN: +n".
 
+### D40: Days are free (confirmed 2026-11-05, from play test 5)
+**Decision:** There is **no cost to start the next day**. GET SCRUBBIN! shows no number and is always pressable. The MUST RETAIN floor is gone: a purchase (upgrade level or Wax pack) is allowed whenever Banked POWA covers its price, and a refused one shows NOT ENOUGH BANKED POWA. The game has no POWA lose condition; TRY AGAIN stays as a voluntary restart.
+**Overrides:** D02 items 4-6 (5 POWA day cost, red GET SCRUBBIN!, MUST RETAIN), D33's day-cost number on GET SCRUBBIN!, D37's flat 5.
+**Test:** Bank 4 → GET SCRUBBIN! starts Day 2 with bank 4. Bank 5 → buying a 5-cost level leaves 0 and is allowed.
+
 ## Still open
 
-- Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play test 4 found Map 1 can be finished by Day 7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Owner chose to keep Map 1 as a short intro and judge after Map 2 is built; ideas on the table: per-map upgrade caps, daily dust settling, higher top-level prices.
+- Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Owner chose to keep Map 1 as a short intro and judge after Map 2 is built; ideas on the table: per-map upgrade caps, daily dust settling, higher top-level prices.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
 - Night-phase derived details (step 2 build), flagged for owner review:
   - A Mud Boy "reaches the far edge" when its forward action would take it off the map; it pops on the edge panel it is standing on (same as the D10 push-off rule).
@@ -226,7 +231,6 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
   - A wave spawns only on edge panels not already occupied (Mud Boys never share a panel, D10); if fewer free panels than Mud Boys remain, the extras do not spawn.
   - Mud Boys still on the map when the Night clock hits 0 simply leave, with no pop and no dirt.
 - Upgrade-screen derived details (step 3 build), flagged for owner review:
-  - The D02 `MUST RETAIN` floor (bank after paying ≥ 5, D37) applies to Wax packs as well as unlocks.
   - BUY prices are green when the purchase would be allowed and red when it would be refused.
   - TRY AGAIN asks for confirmation before restoring the checkpoint.
   - Entering a +8 panel without Retractable Bristles still costs a Scrub counter (the panel stays at +8).

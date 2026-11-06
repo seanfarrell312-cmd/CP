@@ -168,7 +168,5 @@ export const WAX_PACKS = [
   { charges: 3, cost: 10 },
 ];
 
-// D02/D37: every paid day costs this flat amount.
-export const DAY_BASE_COST = 5;
 
 export const WAX_COLOR = '#F48FB1';

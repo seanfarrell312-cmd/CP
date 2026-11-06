@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { RunState } from '../rules/run';
 import { COLORS, FONT, WIDTH, addButton } from '../ui';
 
-// D33: the night's POWA-IN and the bank it leaves. No POWAOUT here; that lives on GET SCRUBBIN!
+// D33: the night's POWA-IN and the bank it leaves. No POWAOUT (D40: days are free).
 export class ScoreScene extends Phaser.Scene {
   constructor() {
     super('Score');

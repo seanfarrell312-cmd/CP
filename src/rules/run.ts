@@ -1,7 +1,6 @@
 import {
   BRUSH_AOE_DEFAULT,
   BRUSH_AOE_SUPPED_UP,
-  DAY_BASE_COST,
   MAPS,
   UPGRADES,
   UpgradeDef,
@@ -107,20 +106,11 @@ export function upgradeValue(run: RunState, id: UpgradeId): number {
   return upgradeDef(id).levels[run.unlocked[id]].value;
 }
 
-// D02/D33/D37: the number on GET SCRUBBIN!, a flat cost with no maintenance.
-export function dayCost(_run: RunState): number {
-  return DAY_BASE_COST;
-}
+export type PurchaseResult = 'bought' | 'too-expensive' | 'max-level';
 
-export function canStartDay(run: RunState): boolean {
-  return run.bank >= dayCost(run);
-}
-
-export type PurchaseResult = 'bought' | 'must-retain' | 'max-level';
-
-// D02 item 6: refused if the bank would drop below the current day cost.
+// D40: no day cost, so a purchase only needs the POWA in the bank.
 export function canSpend(run: RunState, cost: number): boolean {
-  return run.bank - cost >= dayCost(run);
+  return run.bank >= cost;
 }
 
 // Unlock the next level (sequential); it takes effect from the next day.
@@ -128,27 +118,24 @@ export function unlockNext(run: RunState, id: UpgradeId): PurchaseResult {
   const next = run.unlocked[id] + 1;
   const level = upgradeDef(id).levels[next];
   if (!level) return 'max-level';
-  if (!canSpend(run, level.cost)) return 'must-retain';
+  if (!canSpend(run, level.cost)) return 'too-expensive';
   run.bank -= level.cost;
   run.unlocked[id] = next;
   return 'bought';
 }
 
-// D22: Wax packs, repeatable, under the same retain floor as unlocks.
+// D22: Wax packs, repeatable.
 export function buyWax(run: RunState, pack: number): PurchaseResult {
   const { charges, cost } = WAX_PACKS[pack];
-  if (!canSpend(run, cost)) return 'must-retain';
+  if (!canSpend(run, cost)) return 'too-expensive';
   run.bank -= cost;
   run.wax += charges;
   return 'bought';
 }
 
-// D02/D14: pay the day cost and move to the next day number.
-export function startNextDay(run: RunState): boolean {
-  if (!canStartDay(run)) return false;
-  run.bank -= dayCost(run);
+// D14/D40: the next day is free; just move to the next day number.
+export function startNextDay(run: RunState): void {
   run.day++;
-  return true;
 }
 
 // D02/D03: end of night, POWA-IN for the whole map, rounded down, into the bank.

@@ -5,8 +5,6 @@ import { createMap, isWaxed, panelRating } from '../src/rules/grid';
 import { createNight, mudBoyAt, tickNight } from '../src/rules/nightPhase';
 import {
   buyWax,
-  canStartDay,
-  dayCost,
   dayOptions,
   firstDayIsFree,
   hasShopChanges,
@@ -31,30 +29,20 @@ function earn(run: ReturnType<typeof newRun>, n: number) {
 }
 
 describe('D02 ledger', () => {
-  it('owner example: free Day 1, retain floor, flat day cost (D37), red when short', () => {
+  it('D40: days are free; a purchase only needs the price in the bank', () => {
     const run = newRun();
     expect(run.bank).toBe(0);
     expect(firstDayIsFree(run)).toBe(true);
-    expect(earn(run, 6)).toBe(6);
-    expect(run.bank).toBe(6);
-    expect(unlockNext(run, 'reloadSpeed')).toBe('must-retain'); // 6 - 5 = 1 < 5
-    expect(dayCost(run)).toBe(5);
-    expect(startNextDay(run)).toBe(true);
-    expect([run.bank, run.day]).toEqual([1, 2]); // D14
-
-    earn(run, 12);
-    expect(run.bank).toBe(13);
-    expect(unlockNext(run, 'reloadSpeed')).toBe('bought');
-    expect(run.bank).toBe(8);
-    expect(dayCost(run)).toBe(5); // no maintenance
+    expect(earn(run, 4)).toBe(4);
+    expect(unlockNext(run, 'reloadSpeed')).toBe('too-expensive'); // 4 < 5
     startNextDay(run);
-    expect(run.bank).toBe(3);
+    expect([run.bank, run.day]).toEqual([4, 2]); // D14
 
     earn(run, 1);
-    expect(run.bank).toBe(4);
-    expect(canStartDay(run)).toBe(false);
-    expect(startNextDay(run)).toBe(false);
-    expect(run.bank).toBe(4);
+    expect(unlockNext(run, 'reloadSpeed')).toBe('bought'); // 5 - 5 = 0 is fine
+    expect(run.bank).toBe(0);
+    startNextDay(run);
+    expect([run.bank, run.day]).toEqual([0, 3]);
   });
 
   it('levels unlock in order; the highest bought level is active', () => {
@@ -63,7 +51,6 @@ describe('D02 ledger', () => {
     expect(unlockNext(run, 'timeManipulation')).toBe('bought');
     expect(unlockNext(run, 'timeManipulation')).toBe('bought');
     expect(run.bank).toBe(55); // 15 + 30, one-time costs
-    expect(dayCost(run)).toBe(5);
     expect(dayOptions(run).dayLength).toBe(90);
     expect(unlockNext(run, 'bristles')).toBe('bought');
     expect(unlockNext(run, 'bristles')).toBe('max-level');
@@ -78,7 +65,7 @@ describe('D02 ledger', () => {
     run.wax = 3; // one used during the day
     buyWax(run, 1);
     expect(run.wax).toBe(5);
-    expect(buyWax(run, 2)).toBe('must-retain'); // 7 - 10 < 5
+    expect(buyWax(run, 2)).toBe('too-expensive'); // 7 < 10
   });
 
   it('loadout feeds the day and night', () => {
