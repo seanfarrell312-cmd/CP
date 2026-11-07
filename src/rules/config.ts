@@ -160,9 +160,13 @@ export function map2WaveForDay(mapDay: number): WaveRow {
 
 export const BIG_HP_MULTIPLIER = 2;
 
+// D49: each SCRUB! in a row cuts the Scrub timer by `step`, up to `maxSteps` steps.
+export const COMBO = { step: 0.05, maxSteps: 8 } as const;
+
 // BALANCE `Upgrade Levels` (D01: all in the demo). Level 0 is the free default.
 // `value` is what the highest bought level sets; cost is a one-time unlock. No maintenance (D37).
 export type UpgradeId =
+  | 'combo'
   | 'extraScrubbers'
   | 'clipSize'
   | 'bristles'
@@ -188,18 +192,21 @@ export interface UpgradeDef {
 const levels = (rows: [number, number][]): UpgradeLevel[] => rows.map(([value, cost]) => ({ value, cost }));
 
 // D41: each level costs 3x the one before, starting at 3x the workbook's level 1 price.
+// D46: Scrubbing Speed and Reload Speed level 1 cost 10.
 export const UPGRADES: UpgradeDef[] = [
+  // D49: COMBO, listed first as the obvious first buy.
+  { id: 'combo', name: 'Combo', levels: levels([[0, 0], [1, 10]]) },
   { id: 'extraScrubbers', name: 'Extra Scrubbers', map1MaxLevel: 2, levels: levels([[1, 0], [2, 30], [3, 90], [4, 270]]) },
   // D36: workbook 3/2.5/2/1.5/1 scaled by 5/6.
   { id: 'scrubSpeed', name: 'Scrubbing Speed', map1MaxLevel: 2,
-    levels: levels([[2.5, 0], [2.1, 15], [1.7, 45], [1.25, 135], [0.85, 405]]) },
+    levels: levels([[2.5, 0], [2.1, 10], [1.7, 45], [1.25, 135], [0.85, 405]]) },
   // D30: Brush POWA values doubled (workbook 1/2/3/4).
   { id: 'brushPowa', name: 'Brush POWA Level', levels: levels([[2, 0], [4, 30], [6, 90], [8, 270]]) },
   { id: 'brushSize', name: 'Brush Size', levels: levels([[0, 0], [1, 45]]) },
   { id: 'bristles', name: 'Retractable Bristles', levels: levels([[0, 0], [1, 45]]) },
   { id: 'timeManipulation', name: 'Time Manipulation', levels: levels([[70, 0], [80, 45], [90, 135], [100, 405]]) },
   { id: 'clipSize', name: 'Clip Size', map1MaxLevel: 2, levels: levels([[1, 0], [2, 30], [3, 90], [4, 270]]) },
-  { id: 'reloadSpeed', name: 'Reload Speed', map1MaxLevel: 2, levels: levels([[3, 0], [2.5, 15], [2, 45], [1.5, 135], [1, 405]]) },
+  { id: 'reloadSpeed', name: 'Reload Speed', map1MaxLevel: 2, levels: levels([[3, 0], [2.5, 10], [2, 45], [1.5, 135], [1, 405]]) },
 ];
 
 // D22: Wax packs, buyable any number of times.

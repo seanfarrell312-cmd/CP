@@ -119,13 +119,27 @@ export abstract class MapScene extends Phaser.Scene {
     main.startFollow(target, true, 0.2, 0.2);
   }
 
-  // D27 night view: zoom out until the whole map and its margins fit.
-  protected fitBigMap() {
+  // D27 night view: zoom out until the whole map and its margins fit (D48: eased in after a victory).
+  protected fitBigMap(duration = 0) {
     if (this.mapFits()) return;
     const b = this.worldBounds();
     const main = this.cameras.main;
-    main.setZoom(Math.min(main.width / b.width, main.height / b.height));
+    const zoom = Math.min(main.width / b.width, main.height / b.height);
+    main.stopFollow();
+    main.removeBounds();
+    if (duration > 0) {
+      main.zoomTo(zoom, duration, 'Sine.easeInOut');
+      main.pan(b.centerX, b.centerY, duration, 'Sine.easeInOut');
+      return;
+    }
+    main.setZoom(zoom);
     main.centerOn(b.centerX, b.centerY);
+  }
+
+  // The map's outer edge in world pixels (inside the yellow border).
+  protected mapRect(): Phaser.Geom.Rectangle {
+    const { map } = this.run;
+    return new Phaser.Geom.Rectangle(this.mapX - 6, this.mapY - 6, map.panelsX * PANEL + 8, map.panelsY * PANEL + 8);
   }
 
   // Pointer position in map-world coordinates.

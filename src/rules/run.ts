@@ -197,6 +197,7 @@ export function dayOptions(run: RunState): DayOptions {
     bristles: upgradeValue(run, 'bristles') === 1,
     dayLength: upgradeValue(run, 'timeManipulation'),
     wax: run.wax,
+    combo: upgradeValue(run, 'combo') === 1,
   };
 }
 

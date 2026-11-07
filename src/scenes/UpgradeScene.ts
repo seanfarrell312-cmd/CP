@@ -16,13 +16,14 @@ import {
 import { COLORS, FONT, HEIGHT, WIDTH, addButton } from '../ui';
 
 const ROW_TOP = 104;
-const ROW_HEIGHT = 54;
+const ROW_HEIGHT = 50; // D49: nine upgrades plus Wax
 const BOX_LEFT = 330;
 const BOX_W = 150;
-const BOX_H = 46;
+const BOX_H = 44;
 const BOX_GAP = 10;
 
 const DESCRIPTIONS: Record<UpgradeId, string> = {
+  combo: 'SCRUB! streaks speed up the Scrub timer',
   extraScrubbers: 'Scrub counters you can store',
   scrubSpeed: 'Seconds per Scrub counter',
   brushPowa: 'Cleanliness per scrub',
@@ -47,6 +48,7 @@ function valueLabel(id: UpgradeId, value: number): string {
     case 'brushSize':
       return value ? 'Supped UP' : 'Default';
     case 'bristles':
+    case 'combo':
       return value ? 'ON' : 'OFF';
   }
 }
@@ -107,7 +109,7 @@ export class UpgradeScene extends Phaser.Scene {
     const { run } = this;
     const items: Phaser.GameObjects.GameObject[] = [
       this.add.text(40, y + 2, u.name, { fontFamily: FONT, fontSize: '20px', color: '#ffffff' }),
-      this.add.text(40, y + 28, DESCRIPTIONS[u.id], { fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#c8e6c9' }),
+      this.add.text(40, y + 26, DESCRIPTIONS[u.id], { fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#c8e6c9' }),
     ];
     u.levels.forEach((level, n) => {
       const x = BOX_LEFT + n * (BOX_W + BOX_GAP);
@@ -136,7 +138,7 @@ export class UpgradeScene extends Phaser.Scene {
     const { run } = this;
     const items: Phaser.GameObjects.GameObject[] = [
       this.add.text(40, y + 2, `WAX  (you have ${run.wax})`, { fontFamily: FONT, fontSize: '20px', color: '#F48FB1' }),
-      this.add.text(40, y + 28, 'Space on a +8 panel locks it clean', {
+      this.add.text(40, y + 26, 'Space on a +8 panel locks it clean', {
         fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#c8e6c9',
       }),
     ];
@@ -165,8 +167,8 @@ export class UpgradeScene extends Phaser.Scene {
     }
     return [
       rect,
-      this.add.text(x + BOX_W / 2, y + 13, label, { fontFamily: FONT, fontSize: '16px', color }).setOrigin(0.5),
-      this.add.text(x + BOX_W / 2, y + 33, sub, { fontFamily: 'Arial Black, Arial, sans-serif', fontSize: '14px', color: subColor }).setOrigin(0.5),
+      this.add.text(x + BOX_W / 2, y + 12, label, { fontFamily: FONT, fontSize: '16px', color }).setOrigin(0.5),
+      this.add.text(x + BOX_W / 2, y + 32, sub, { fontFamily: 'Arial Black, Arial, sans-serif', fontSize: '14px', color: subColor }).setOrigin(0.5),
     ];
   }
 

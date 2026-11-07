@@ -159,3 +159,66 @@ describe('D35 refill to max', () => {
     expect(b.count).toBe(4);
   });
 });
+
+describe('D47 move feedback', () => {
+  it('SCRUB! above 0, ICK! at 0 or below, nothing on a spotless panel', () => {
+    const map = createMap(MAPS[1]); // starts at -4 (D43)
+    const day = createDay(map, { startedImmediately: true, scrubMax: 10 });
+    tryMove(day, 'right'); // -4 -> about -2.5: still muddy
+    expect(day.feedback).toBe('ick');
+
+    const clean = createMap(MAPS[0]);
+    const d2 = createDay(clean, { startedImmediately: true, scrubMax: 10 });
+    tryMove(d2, 'right'); // 0 -> +1
+    expect(d2.feedback).toBe('scrub');
+    clean.tiles.fill(8);
+    tryMove(d2, 'right');
+    expect(d2.feedback).toBe('none');
+  });
+
+  it('SLIP! for a free move with Bristles', () => {
+    const map = createMap(MAPS[0]);
+    map.tiles.fill(8);
+    const day = createDay(map, { startedImmediately: true, bristles: true });
+    expect(tryMove(day, 'right')).toBe('glided');
+    expect(day.feedback).toBe('slip');
+  });
+});
+
+describe('D49 combo', () => {
+  it('each SCRUB! cuts the timer 5%, any other move resets it', () => {
+    const map = createMap(MAPS[0]);
+    const day = createDay(map, { startedImmediately: true, scrubMax: 10, scrubDuration: 2.5, combo: true });
+    tryMove(day, 'right');
+    tryMove(day, 'right');
+    tryMove(day, 'right');
+    expect(day.combo).toBe(3);
+    expect(day.scrub.duration).toBeCloseTo(2.125);
+    // Muddy panel below: ICK! breaks it.
+    for (let ly = 0; ly < 4; ly++) for (let lx = 0; lx < 4; lx++) map.tiles[(4 + ly) * 40 + 12 + lx] = -6;
+    tryMove(day, 'down');
+    expect(day.feedback).toBe('ick');
+    expect([day.combo, day.scrub.duration]).toEqual([0, 2.5]);
+  });
+
+  it('caps at 8 steps and does nothing without the upgrade', () => {
+    const map = createMap(MAPS[0]);
+    const day = createDay(map, { startedImmediately: true, scrubMax: 20, scrubDuration: 2, combo: true });
+    for (let i = 0; i < 9; i++) tryMove(day, 'right');
+    expect(day.combo).toBe(9);
+    expect(day.scrub.duration).toBeCloseTo(1.2);
+
+    const plain = createDay(createMap(MAPS[0]), { startedImmediately: true, scrubMax: 5, scrubDuration: 2 });
+    tryMove(plain, 'right');
+    expect([plain.combo, plain.scrub.duration]).toEqual([0, 2]);
+  });
+
+  it('a move that does not happen leaves the combo alone', () => {
+    const day = createDay(createMap(MAPS[0]), { startedImmediately: true, scrubMax: 2, combo: true });
+    tryMove(day, 'right');
+    tryMove(day, 'right');
+    expect(tryMove(day, 'right')).toBe('no-counter');
+    expect(tryMove(day, 'up')).toBe('blocked');
+    expect(day.combo).toBe(2);
+  });
+});

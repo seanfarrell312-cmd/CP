@@ -69,7 +69,7 @@ describe('upgrade levels', () => {
     return out;
   }
 
-  it('costs follow D41 from the workbook level 1 price; values match except Brush POWA (D30 x2) and Scrubbing Speed (D36 x5/6)', () => {
+  it('costs follow D41/D46 from the workbook level 1 price; values match except Brush POWA (D30 x2) and Scrubbing Speed (D36 x5/6)', () => {
     const [scrubbers, clip, wax, bristles, time, reload, scrub, brush, size] = blocks();
     const byId = Object.fromEntries(UPGRADES.map((u) => [u.id, u.levels]));
     const pairs = { extraScrubbers: scrubbers, clipSize: clip, bristles, timeManipulation: time,
@@ -77,7 +77,9 @@ describe('upgrade levels', () => {
     for (const [id, rows] of Object.entries(pairs)) {
       // D41: level 1 is 3x the workbook price, each later level 3x the one before.
       const l1 = Number(rows[1][2]);
-      expect(byId[id].map((l) => l.cost)).toEqual(rows.map((_, n) => (n === 0 ? 0 : l1 * 3 ** n)));
+      // D46: Scrubbing Speed and Reload Speed level 1 cost 10.
+      const d46 = id === 'scrubSpeed' || id === 'reloadSpeed';
+      expect(byId[id].map((l) => l.cost)).toEqual(rows.map((_, n) => (n === 0 ? 0 : d46 && n === 1 ? 10 : l1 * 3 ** n)));
       const numeric = rows.every((r) => !isNaN(Number(r[1])));
       if (numeric && id !== 'scrubSpeed') {
         const scale = id === 'brushPowa' ? 2 : 1;

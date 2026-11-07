@@ -1,10 +1,13 @@
-import { BRUSH_AOE_DEFAULT, BrushAoe, DEFAULT_BRUSH_POWA, DEFAULT_SCRUB_MAX, TILE_MAX, TIMERS } from './config';
+import { BRUSH_AOE_DEFAULT, BrushAoe, COMBO, DEFAULT_BRUSH_POWA, DEFAULT_SCRUB_MAX, TILE_MAX, TILES_PER_PANEL_SIDE as SIDE, TIMERS } from './config';
 import { CounterBank, createBank, spend, tickBank } from './counterBank';
-import { MapState, applyBrush, inBounds, isFullyClean, isWaxed, panelRating } from './grid';
+import { MapState, applyBrush, getTile, inBounds, isFullyClean, isWaxed, panelRating } from './grid';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
 export type MoveResult = 'moved' | 'glided' | 'blocked' | 'no-counter' | 'day-over';
+
+// D47: the word shown after a move. 'none' for a scrub that changed nothing or a glide without Bristles.
+export type MoveFeedback = 'scrub' | 'ick' | 'slip' | 'none';
 
 export type WaxResult = 'waxed' | 'not-eligible' | 'no-wax' | 'day-over';
 
@@ -25,6 +28,12 @@ export interface DayState {
   ended: boolean;
   // D15: set by the move that makes every panel +8; the day ends there.
   victory: boolean;
+  // D47: feedback for the last move that happened.
+  feedback: MoveFeedback;
+  // D49: SCRUB! moves in a row (only counted when COMBO is owned), and the uncut Scrub timer.
+  comboEnabled: boolean;
+  combo: number;
+  scrubBase: number;
 }
 
 export interface DayOptions {
@@ -38,15 +47,17 @@ export interface DayOptions {
   wax?: number;
   dayLength?: number;
   startedImmediately?: boolean;
+  combo?: boolean;
 }
 
 export function createDay(map: MapState, opts: DayOptions = {}): DayState {
   const dayLength = opts.dayLength ?? TIMERS.daylight;
+  const scrubBase = opts.scrubDuration ?? TIMERS.scrub;
   return {
     map,
     px: opts.startPx ?? 0,
     py: opts.startPy ?? 0,
-    scrub: createBank(opts.scrubMax ?? DEFAULT_SCRUB_MAX, opts.scrubDuration ?? TIMERS.scrub),
+    scrub: createBank(opts.scrubMax ?? DEFAULT_SCRUB_MAX, scrubBase),
     brushPowa: opts.brushPowa ?? DEFAULT_BRUSH_POWA,
     aoe: opts.aoe ?? BRUSH_AOE_DEFAULT,
     bristles: opts.bristles ?? false,
@@ -56,7 +67,23 @@ export function createDay(map: MapState, opts: DayOptions = {}): DayState {
     started: opts.startedImmediately ?? false,
     ended: false,
     victory: false,
+    feedback: 'none',
+    comboEnabled: opts.combo ?? false,
+    combo: 0,
+    scrubBase,
   };
+}
+
+function panelSum(map: MapState, px: number, py: number): number {
+  let sum = 0;
+  for (let ly = 0; ly < SIDE; ly++) for (let lx = 0; lx < SIDE; lx++) sum += getTile(map, px * SIDE + lx, py * SIDE + ly);
+  return sum;
+}
+
+// D49: the combo sets the Scrub timer at once, including a recharge already running.
+function setCombo(day: DayState, combo: number): void {
+  day.combo = combo;
+  day.scrub.duration = day.scrubBase * (1 - COMBO.step * Math.min(combo, COMBO.maxSteps));
 }
 
 const STEPS: Record<Direction, [number, number]> = {
@@ -80,11 +107,17 @@ export function tryMove(day: DayState, dir: Direction): MoveResult {
   day.px = nx;
   day.py = ny;
   day.started = true;
-  if (!free) {
+  if (free) {
+    day.feedback = day.bristles ? 'slip' : 'none';
+  } else {
+    const before = panelSum(day.map, nx, ny);
     applyBrush(day.map, nx, ny, day.brushPowa, day.aoe);
+    const cleaner = panelSum(day.map, nx, ny) > before;
+    day.feedback = !cleaner ? 'none' : panelRating(day.map, nx, ny) > 0 ? 'scrub' : 'ick';
     // D15/D23: checked after each scrub; victory stops the clock at once.
     if (isFullyClean(day.map)) day.victory = day.ended = true;
   }
+  if (day.comboEnabled) setCombo(day, day.feedback === 'scrub' ? day.combo + 1 : 0);
   return free ? 'glided' : 'moved';
 }
 

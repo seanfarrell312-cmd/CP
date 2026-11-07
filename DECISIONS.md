@@ -252,9 +252,39 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** ENEMY single-panel Mud Boy as the only enemy; fills the design notes' "slower/non-knockback" future enemy idea for Map 2.
 **Test:** Map 2 day 6 night: one Big Mud Boy with 6 HP on a 2x2 edge block. After 3 s it is 2 panels in, all 4 new panels at -2. Five hits leave it in place with 1 HP; the sixth pops it.
 
+### D46: Cheaper first speed upgrades (confirmed 2026-11-07, from play test 7)
+**Why:** With D41 prices only 3 upgrades were bought by Day 3; a 10 POWA first step means the first upgrade screen almost always has something to buy.
+**Decision:** Level 1 of **Scrubbing Speed** and **Reload Speed** costs **10 POWA** (was 15). Their later levels keep the D41 prices (45 / 135 / 405), and every other price is unchanged.
+**Overrides:** D41 for those two level 1 prices.
+**Test:** Bank 10 → Scrubbing Speed L1 bought, bank 0; bank 9 → refused.
+
+### D47: Move feedback text (confirmed 2026-11-07, from play test 7)
+**Decision:** After each move or wax, a short animated word rises from Scrubby's panel and fades:
+1. **SCRUB!** when the scrub made the panel cleaner and it is rated **above 0** afterwards.
+2. **ICK!** when the scrub made the panel cleaner but it is still rated **0 or below** (it adds nothing to POWA-IN yet).
+3. **SLIP!** when the player owns Retractable Bristles and the move was free (no Scrub counter spent).
+4. **BEAUTIFUL!** when Space waxes the panel.
+A scrub that changes nothing (a +8 panel without Bristles) shows no word.
+**Test:** Map 2 day: scrubbing a -4 panel shows ICK!; scrubbing a 0 panel to +1 shows SCRUB!.
+
+### D48: Spotless fence (confirmed 2026-11-07, from play test 7)
+**Why:** A story reason for the Mud Boys staying away once a map is spotless.
+**Decision:** On victory (D15/D23), after SPOTLESS!, the view shows the whole map and a fence builds post by post around it. A caption says the Mud Boys can't get in any more, then the game goes on to the Score screen ("No night tonight.").
+**Test:** Win Map 1: SPOTLESS!, the fence closes around the map, then the Score screen.
+
+### D49: COMBO upgrade (confirmed 2026-11-07, from play test 7)
+**Why:** Rewards planning a route through dirty panels, and gives Map 2 more to engage with.
+**Decision:**
+1. A new upgrade, **COMBO**, one level for **10 POWA**, listed first on the upgrade screen and buyable on Map 1. Without it there is no combo.
+2. With it, every **SCRUB!** move adds 1 to the combo. **Any other move** (ICK!, SLIP!, gliding over wax, scrubbing a +8 panel) resets it to 0. Moves that don't happen (map edge, no Scrub counter), waxing and waiting don't change it. Each day starts at 0.
+3. While the combo is n, the Scrub timer is **5% shorter per step, up to 40% at a combo of 8** or more (duration = Scrubbing Speed x (1 - 0.05 x min(n, 8))). The change applies at once, including to a recharge already running.
+4. The combo counter is shown large on the left side of the screen during the day, with the current timer cut.
+**Overrides:** D01's upgrade list (adds a ninth upgrade).
+**Test:** With COMBO and Scrubbing Speed 2.5 s, three SCRUB! moves set the timer to 2.125 s; an ICK! move sets it back to 2.5 s.
+
 ## Still open
 
-- Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Owner to judge the new pacing in play testing; daily dust settling remains an unused idea.
+- Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Play test 7 (D41-D45) finished on Day 16 with 6,936 POWA banked after 15-30 minutes; Map 2 felt grindy from about Day 12 and later prices may need lowering. D46-D49 respond to the early game and engagement. Owner to judge in play testing; daily dust settling remains an unused idea.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
 - Night-phase derived details (step 2 build), flagged for owner review:
   - A Mud Boy "reaches the far edge" when its forward action would take it off the map; it pops on the edge panel it is standing on (same as the D10 push-off rule).
@@ -276,3 +306,8 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
   - A Big Mud Boy pushes small Mud Boys in its landing block forward until they are clear of it (each push dirties the panel entered, D10). Another Big Mud Boy in the way blocks the jump and it waits for its next 3 s action.
   - Small Mud Boys can't push a Big Mud Boy: a small one whose step is blocked by a Big one waits, and a knockback into a Big one is blocked (the hit still removes 1 HP).
   - Clicking any of its 4 panels shoots it.
+- Feedback, fence and combo derived details (D47-D49 build), flagged for owner review:
+  - Gliding over a waxed panel without Bristles shows no word; with Bristles owned every free move shows SLIP!.
+  - No sounds yet: play test 7 mentioned sounds but did not describe any.
+  - The fence takes about 2 s to build, and the Score screen follows about 1.5 s after it closes.
+  - The combo counter shows only when COMBO is owned; when a combo breaks it flashes red and shows 0.

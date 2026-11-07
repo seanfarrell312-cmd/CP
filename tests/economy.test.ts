@@ -37,13 +37,13 @@ describe('D02 ledger', () => {
     const run = newRun();
     expect(run.bank).toBe(0);
     expect(firstDayIsFree(run)).toBe(true);
-    expect(earn(run, 14)).toBe(14);
-    expect(unlockNext(run, 'reloadSpeed')).toBe('too-expensive'); // 14 < 15 (D41)
+    expect(earn(run, 9)).toBe(9);
+    expect(unlockNext(run, 'reloadSpeed')).toBe('too-expensive'); // 9 < 10 (D46)
     startNextDay(run);
-    expect([run.bank, run.day]).toEqual([14, 2]); // D14
+    expect([run.bank, run.day]).toEqual([9, 2]); // D14
 
     earn(run, 1);
-    expect(unlockNext(run, 'reloadSpeed')).toBe('bought'); // 15 - 15 = 0 is fine
+    expect(unlockNext(run, 'reloadSpeed')).toBe('bought'); // 10 - 10 = 0 is fine
     expect(run.bank).toBe(0);
     startNextDay(run);
     expect([run.bank, run.day]).toEqual([0, 3]);
@@ -141,15 +141,15 @@ describe('Wax and Retractable Bristles (D30: +8)', () => {
 describe('RESET PURCHASES (D34)', () => {
   it('restores the bank and unlocks from when the night was scored', () => {
     const run = newRun();
-    earn(run, 53);
+    earn(run, 48);
     expect(hasShopChanges(run)).toBe(false);
     expect(unlockNext(run, 'scrubSpeed')).toBe('bought');
     expect(unlockNext(run, 'extraScrubbers')).toBe('bought');
-    expect(run.bank).toBe(8); // 53 - 15 - 30
+    expect(run.bank).toBe(8); // 48 - 10 - 30
     expect(hasShopChanges(run)).toBe(true);
 
     resetPurchases(run);
-    expect(run.bank).toBe(53);
+    expect(run.bank).toBe(48);
     expect(run.unlocked.extraScrubbers).toBe(0);
     expect(run.unlocked.scrubSpeed).toBe(0);
     expect(hasShopChanges(run)).toBe(false);
@@ -208,7 +208,7 @@ describe('map victory and Map 2 (D15, D23, D13)', () => {
     run.day = 6;
     run.px = 5;
     nextMap(run);
-    expect([run.mapIndex, run.map.panelsX, run.px, run.py, run.day, run.bank, run.wax]).toEqual([1, 25, 0, 0, 6, 390, 2]);
+    expect([run.mapIndex, run.map.panelsX, run.px, run.py, run.day, run.bank, run.wax]).toEqual([1, 25, 0, 0, 6, 395, 2]);
     const fresh = [...run.map.tiles];
     expect(isLastMap(run)).toBe(true);
     expect(firstDayIsFree(run)).toBe(false);
@@ -217,7 +217,7 @@ describe('map victory and Map 2 (D15, D23, D13)', () => {
     startNextDay(run);
     earn2(run);
     tryAgain(run);
-    expect([run.day, run.bank, run.wax, run.unlocked.reloadSpeed, run.unlocked.clipSize]).toEqual([6, 390, 2, 2, 0]);
+    expect([run.day, run.bank, run.wax, run.unlocked.reloadSpeed, run.unlocked.clipSize]).toEqual([6, 395, 2, 2, 0]);
     expect([...run.map.tiles]).toEqual(fresh);
   });
 });
