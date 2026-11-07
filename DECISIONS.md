@@ -221,9 +221,40 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
 **Overrides:** D02 items 4-6 (5 POWA day cost, red GET SCRUBBIN!, MUST RETAIN), D33's day-cost number on GET SCRUBBIN!, D37's flat 5.
 **Test:** Bank 4 → GET SCRUBBIN! starts Day 2 with bank 4. Bank 5 → buying a 5-cost level leaves 0 and is allowed.
 
+### D41: Steeper upgrade prices (confirmed 2026-11-06, from play test 6)
+**Why:** Both maps were finished by about Day 6; POWA income grows with the map's cleanliness, so the workbook prices (about 355 POWA for everything) were covered by a single clean Map 1 night.
+**Decision:** Level 1 of each upgrade costs **3x the workbook level 1 price**, and every later level costs **3x the level before**. Extra Scrubbers and Clip Size 30 / 90 / 270; Scrubbing Speed and Reload Speed 15 / 45 / 135 / 405; Brush POWA 30 / 90 / 270; Brush Size 45; Retractable Bristles 45; Time Manipulation 45 / 135 / 405. Everything together costs about 3,045. Wax packs are unchanged (5 / 8 / 10).
+**Overrides:** BALANCE `Upgrade Levels` Cost column.
+**Test:** Bank 14 → Reload Speed L1 (15) refused; bank 15 → bought, bank 0.
+
+### D42: Top counter levels locked until Map 2 (confirmed 2026-11-06, from play test 6)
+**Decision:** On Map 1, **Extra Scrubbers, Scrubbing Speed, Clip Size and Reload Speed can be bought only up to level 2** (3 max, 1.7 s, 3 max, 2 s). Their higher levels show **LOCKED: MAP 2** and become buyable from Map 2's first upgrade screen. Every other upgrade is fully available on Map 1.
+**Overrides:** D01 for those levels (all upgrades are still in the demo, but not all levels on Map 1).
+**Test:** Map 1 with plenty of POWA: Scrubbing Speed L1 and L2 buy, L3 is refused as locked. After NEXT MAP, L3 and L4 buy (0.85 s).
+
+### D43: Map 2 starts dirty (confirmed 2026-11-06, from play test 6)
+**Decision:** Every Map 2 tile starts at **-4** instead of 0, and six fixed patches start at **-10** (the filthiest): panel blocks 4x3 at P(3,4), 5x4 at P(15,2), 5x5 at P(9,11), 4x4 at P(19,13), 5x4 at P(2,18) and 3x3 at P(14,20). The layout is the same every game and after TRY AGAIN. Map 1 still starts at 0. Victory still needs every panel at +8 (2,500 POWA-IN).
+**Overrides:** Handoff "each demo tile starts at cleanliness 0" for Map 2 (it moves the full-release "more heavily soiled pockets" idea into the demo).
+**Test:** New Map 2: P(0,0) rated -4, P(11,13) rated -10, P(14,13) rated -4.
+
+### D44: Map 2 wave table (confirmed 2026-11-06, from play test 6)
+**Decision:** Map 2 has its **own wave table, counted by Map 2 day**: the first day played on Map 2 is Map 2 day 1, whatever the global day number. Map 2 day n uses Map 1's row for day n (edge, HP, waves) with **2.5x as many small Mud Boys, rounded down** (its edges are 2.5x longer), plus D45's Big Mud Boys. Map 1 keeps the day-number table (D07/D08). TRY AGAIN on Map 2 restarts at Map 2 day 1.
+**Overrides:** D07/D08's single day-number table for Map 2.
+**Test:** Win Map 1 on day 9; day 10 is Map 2 day 1 with 7 small Mud Boys of 3 HP in 1 wave from the bottom.
+
+### D45: Big Mud Boys (confirmed 2026-11-06, from play test 6)
+**Decision:** On Map 2 a new Mud Boy covers a **2x2 block** of panels (placeholder: the same model at double size).
+1. **Count:** per wave, Map 2 days 1-5: 0; days 6-11: 1; days 12-17: 2; day 18 on: 3. They arrive with the small Mud Boys of the same wave.
+2. **HP:** twice the small Mud Boys' HP for that day. Every hit removes 1 HP; **hits never move it**, so it must be popped.
+3. **Movement:** every 3 s it **jumps 2 panels forward** into a fresh 2x2 block and applies **-2** to each of those 4 panels (spawning applies -2 to its 4 edge panels). If the jump would leave the map, it pops where it stands.
+4. **Pop:** **-4** on its 4 panels and **-2** on the 8 panels touching its sides (diagonal corners untouched).
+5. The owner may switch rule 3 to a 1-panel step that dirties the panels it overlaps if the 2-panel jump plays badly.
+**Overrides:** ENEMY single-panel Mud Boy as the only enemy; fills the design notes' "slower/non-knockback" future enemy idea for Map 2.
+**Test:** Map 2 day 6 night: one Big Mud Boy with 6 HP on a 2x2 edge block. After 3 s it is 2 panels in, all 4 new panels at -2. Five hits leave it in place with 1 HP; the sixth pops it.
+
 ## Still open
 
-- Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Owner chose to keep Map 1 as a short intro and judge after Map 2 is built; ideas on the table: per-map upgrade caps, daily dust settling, higher top-level prices.
+- Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Owner to judge the new pacing in play testing; daily dust settling remains an unused idea.
 - D10 derived details (push does not affect the pushed Mud Boy's timer or HP): flagged for owner review.
 - Night-phase derived details (step 2 build), flagged for owner review:
   - A Mud Boy "reaches the far edge" when its forward action would take it off the map; it pops on the edge panel it is standing on (same as the D10 push-off rule).
@@ -240,3 +271,8 @@ Any Dxx not listed below is still **OPEN**: do not implement it by assumption.
   - Scrubby starts Map 2 on P(0,0). Wax charges carry over; panels waxed on Map 1 do not (the new map starts unwaxed at 0).
   - Map 2 by day: the camera follows Scrubby, clamped so the map edge never leaves a gap. By night: the view zooms to about 0.45x so the whole 25 x 25 map, turret and SPLAT! margins fit; Mud Boys are smaller but clickable.
   - RESET PURCHASES on Map 2's first upgrade screen goes back to the arrival state (the same state TRY AGAIN restores).
+- Big Mud Boy derived details (D45 build), flagged for owner review:
+  - Big Mud Boys pick a free 2x2 block on the spawn edge before the small Mud Boys of the same wave pick their panels; if no block is free, the extras don't spawn.
+  - A Big Mud Boy pushes small Mud Boys in its landing block forward until they are clear of it (each push dirties the panel entered, D10). Another Big Mud Boy in the way blocks the jump and it waits for its next 3 s action.
+  - Small Mud Boys can't push a Big Mud Boy: a small one whose step is blocked by a Big one waits, and a knockback into a Big one is blocked (the hit still removes 1 HP).
+  - Clicking any of its 4 panels shoots it.

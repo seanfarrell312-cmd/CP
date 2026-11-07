@@ -6,6 +6,9 @@ import {
   UpgradeDef,
   UpgradeId,
   WAX_PACKS,
+  WaveRow,
+  map2WaveForDay,
+  waveForDay,
 } from './config';
 import { DayOptions } from './dayPhase';
 import { MapState, createMap, expectedPowain } from './grid';
@@ -33,6 +36,8 @@ export interface RunState {
   // Highest bought level per upgrade; it is always the active one (D37).
   unlocked: Levels;
   wax: number;
+  // The day number of the first day played on this map (D44).
+  firstMapDay: number;
   checkpoint: Checkpoint;
   // What RESET PURCHASES restores (D34): the state when the upgrade screen opened.
   shopStart: Checkpoint;
@@ -51,6 +56,7 @@ export function newRun(): RunState {
     bank: 0,
     unlocked: noLevels(),
     wax: 0,
+    firstMapDay: 1,
     checkpoint: undefined!,
     shopStart: undefined!,
   };
@@ -106,7 +112,14 @@ export function upgradeValue(run: RunState, id: UpgradeId): number {
   return upgradeDef(id).levels[run.unlocked[id]].value;
 }
 
-export type PurchaseResult = 'bought' | 'too-expensive' | 'max-level';
+export type PurchaseResult = 'bought' | 'too-expensive' | 'max-level' | 'locked';
+
+// D42: the highest level that can be bought on the current map.
+export function maxBuyableLevel(run: RunState, id: UpgradeId): number {
+  const def = upgradeDef(id);
+  const top = def.levels.length - 1;
+  return run.mapIndex === 0 && def.map1MaxLevel !== undefined ? Math.min(top, def.map1MaxLevel) : top;
+}
 
 // D40: no day cost, so a purchase only needs the POWA in the bank.
 export function canSpend(run: RunState, cost: number): boolean {
@@ -118,6 +131,7 @@ export function unlockNext(run: RunState, id: UpgradeId): PurchaseResult {
   const next = run.unlocked[id] + 1;
   const level = upgradeDef(id).levels[next];
   if (!level) return 'max-level';
+  if (next > maxBuyableLevel(run, id)) return 'locked';
   if (!canSpend(run, level.cost)) return 'too-expensive';
   run.bank -= level.cost;
   run.unlocked[id] = next;
@@ -162,8 +176,14 @@ export function nextMap(run: RunState): void {
   run.map = createMap(MAPS[run.mapIndex]);
   run.px = 0;
   run.py = 0;
+  run.firstMapDay = run.day + 1;
   run.checkpoint = snapshot(run);
   run.shopStart = snapshot(run);
+}
+
+// D44: Map 1 waves go by day number; Map 2 has its own table, counted from its first day.
+export function waveForRun(run: RunState): WaveRow {
+  return run.mapIndex === 0 ? waveForDay(run.day) : map2WaveForDay(run.day - run.firstMapDay + 1);
 }
 
 export function dayOptions(run: RunState): DayOptions {

@@ -8,6 +8,7 @@ import {
   resetPurchases,
   firstDayIsFree,
   hasShopChanges,
+  maxBuyableLevel,
   startNextDay,
   tryAgain,
   unlockNext,
@@ -113,8 +114,10 @@ export class UpgradeScene extends Phaser.Scene {
       // D37: the highest owned level is the active one; there is nothing to equip.
       const active = n === run.unlocked[u.id];
       const owned = n < run.unlocked[u.id];
-      const next = n === run.unlocked[u.id] + 1;
-      const sub = active ? 'ACTIVE' : owned ? 'owned' : `BUY ${level.cost}`;
+      // D42: levels held back for Map 2 show as locked.
+      const locked = n > maxBuyableLevel(run, u.id);
+      const next = n === run.unlocked[u.id] + 1 && !locked;
+      const sub = active ? 'ACTIVE' : owned ? 'owned' : locked ? 'LOCKED: MAP 2' : `BUY ${level.cost}`;
       let fill = 0x3a3a3a;
       let color = '#777777';
       if (active) [fill, color] = [0x2e7d32, '#ffffff'];

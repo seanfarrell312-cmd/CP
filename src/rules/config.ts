@@ -12,15 +12,40 @@ export const TILE_MIN = -10;
 export const TILE_MAX = 8; // D30 (was 4)
 export const TILES_PER_PANEL_SIDE = 4;
 
+// A block of panels, by top-left panel and size.
+export interface PanelRect {
+  px: number;
+  py: number;
+  w: number;
+  h: number;
+}
+
 export interface MapDefinition {
   name: string;
   panelsX: number;
   panelsY: number;
+  // Starting tile cleanliness (default 0), and blocks that start at TILE_MIN instead.
+  start?: number;
+  filthy?: PanelRect[];
 }
 
 export const MAPS: MapDefinition[] = [
   { name: 'Map 1', panelsX: 10, panelsY: 10 },
-  { name: 'Map 2', panelsX: 25, panelsY: 25 },
+  // D43: Map 2 starts dirty, with a fixed set of filthy patches.
+  {
+    name: 'Map 2',
+    panelsX: 25,
+    panelsY: 25,
+    start: -4,
+    filthy: [
+      { px: 3, py: 4, w: 4, h: 3 },
+      { px: 15, py: 2, w: 5, h: 4 },
+      { px: 9, py: 11, w: 5, h: 5 },
+      { px: 19, py: 13, w: 4, h: 4 },
+      { px: 2, py: 18, w: 5, h: 4 },
+      { px: 14, py: 20, w: 3, h: 3 },
+    ],
+  },
 ];
 
 // Multiplier applied to Brush POWA for each tile of the destination panel, [row][col].
@@ -100,6 +125,8 @@ export interface WaveRow {
   destination: Edge;
   hp: number; // D07
   waves: number;
+  // D45: Big Mud Boys per wave (Map 2 only), with twice the small HP.
+  big?: number;
 }
 
 // BALANCE `Mud boy Waves`: a 30-day cycle repeated for days 1-90, then the `>90` row (D21).
@@ -123,6 +150,16 @@ export function waveForDay(day: number): WaveRow {
   return day > 90 ? WAVE_AFTER_90 : WAVE_TABLE[day - 1];
 }
 
+// D44: Map 2 has its own table, by day on Map 2 (its first day is 1): the Map 1 row for that
+// day with 2.5x as many small Mud Boys (rounded down), plus D45's Big Mud Boys from Map 2 day 6.
+export function map2WaveForDay(mapDay: number): WaveRow {
+  const base = waveForDay(mapDay);
+  const big = mapDay < 6 ? 0 : mapDay < 12 ? 1 : mapDay < 18 ? 2 : 3;
+  return { ...base, count: Math.floor(base.count * 2.5), big };
+}
+
+export const BIG_HP_MULTIPLIER = 2;
+
 // BALANCE `Upgrade Levels` (D01: all in the demo). Level 0 is the free default.
 // `value` is what the highest bought level sets; cost is a one-time unlock. No maintenance (D37).
 export type UpgradeId =
@@ -144,21 +181,25 @@ export interface UpgradeDef {
   id: UpgradeId;
   name: string;
   levels: UpgradeLevel[];
+  // D42: highest level sold on Map 1; the rest unlock on Map 2.
+  map1MaxLevel?: number;
 }
 
 const levels = (rows: [number, number][]): UpgradeLevel[] => rows.map(([value, cost]) => ({ value, cost }));
 
+// D41: each level costs 3x the one before, starting at 3x the workbook's level 1 price.
 export const UPGRADES: UpgradeDef[] = [
-  { id: 'extraScrubbers', name: 'Extra Scrubbers', levels: levels([[1, 0], [2, 10], [3, 15], [4, 20]]) },
+  { id: 'extraScrubbers', name: 'Extra Scrubbers', map1MaxLevel: 2, levels: levels([[1, 0], [2, 30], [3, 90], [4, 270]]) },
   // D36: workbook 3/2.5/2/1.5/1 scaled by 5/6.
-  { id: 'scrubSpeed', name: 'Scrubbing Speed', levels: levels([[2.5, 0], [2.1, 5], [1.7, 10], [1.25, 15], [0.85, 20]]) },
+  { id: 'scrubSpeed', name: 'Scrubbing Speed', map1MaxLevel: 2,
+    levels: levels([[2.5, 0], [2.1, 15], [1.7, 45], [1.25, 135], [0.85, 405]]) },
   // D30: Brush POWA values doubled (workbook 1/2/3/4).
-  { id: 'brushPowa', name: 'Brush POWA Level', levels: levels([[2, 0], [4, 10], [6, 15], [8, 20]]) },
-  { id: 'brushSize', name: 'Brush Size', levels: levels([[0, 0], [1, 15]]) },
-  { id: 'bristles', name: 'Retractable Bristles', levels: levels([[0, 0], [1, 15]]) },
-  { id: 'timeManipulation', name: 'Time Manipulation', levels: levels([[70, 0], [80, 15], [90, 30], [100, 45]]) },
-  { id: 'clipSize', name: 'Clip Size', levels: levels([[1, 0], [2, 10], [3, 15], [4, 20]]) },
-  { id: 'reloadSpeed', name: 'Reload Speed', levels: levels([[3, 0], [2.5, 5], [2, 10], [1.5, 15], [1, 20]]) },
+  { id: 'brushPowa', name: 'Brush POWA Level', levels: levels([[2, 0], [4, 30], [6, 90], [8, 270]]) },
+  { id: 'brushSize', name: 'Brush Size', levels: levels([[0, 0], [1, 45]]) },
+  { id: 'bristles', name: 'Retractable Bristles', levels: levels([[0, 0], [1, 45]]) },
+  { id: 'timeManipulation', name: 'Time Manipulation', levels: levels([[70, 0], [80, 45], [90, 135], [100, 405]]) },
+  { id: 'clipSize', name: 'Clip Size', map1MaxLevel: 2, levels: levels([[1, 0], [2, 30], [3, 90], [4, 270]]) },
+  { id: 'reloadSpeed', name: 'Reload Speed', map1MaxLevel: 2, levels: levels([[3, 0], [2.5, 15], [2, 45], [1.5, 135], [1, 405]]) },
 ];
 
 // D22: Wax packs, buyable any number of times.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAPS, WaveRow, waveForDay } from '../src/rules/config';
+import { MAPS, WaveRow, map2WaveForDay, waveForDay } from '../src/rules/config';
 import { createMap, getTile, panelRating } from '../src/rules/grid';
 import { MudBoy, NightState, createNight, mudBoyAt, shootAt, tickNight } from '../src/rules/nightPhase';
 
@@ -11,8 +11,8 @@ const wave = (over: Partial<WaveRow> = {}): WaveRow => ({
 const night = (w: WaveRow = wave()) => createNight(createMap(MAPS[0]), w, { rng: () => 0 });
 
 // Place a Mud Boy by hand, as a bottom→top walker.
-function place(n: NightState, px: number, py: number, hp = 3): MudBoy {
-  const mb: MudBoy = { id: n.nextId++, px, py, hp, fx: 0, fy: -1, timer: 0 };
+function place(n: NightState, px: number, py: number, hp = 3, size: 1 | 2 = 1): MudBoy {
+  const mb: MudBoy = { id: n.nextId++, px, py, size, hp, fx: 0, fy: -1, timer: 0 };
   n.mudBoys.push(mb);
   return mb;
 }
@@ -214,5 +214,99 @@ describe('shooting', () => {
     tickNight(n, 0.5);
     expect(n.shoot.count).toBe(1);
     expect(mudBoyAt(n, 4, 2)).toBeDefined(); // knocked to 3, walked back to 2
+  });
+});
+
+describe('D44 Map 2 wave table', () => {
+  it('counts by Map 2 day: 2.5x the small Mud Boys, Big ones from day 6', () => {
+    const rows = [1, 5, 6, 11, 12, 17, 18, 40].map((d) => map2WaveForDay(d));
+    expect(rows.map((r) => r.big)).toEqual([0, 0, 1, 1, 2, 2, 3, 3]);
+    expect(rows[0]).toMatchObject({ count: 7, hp: 3, waves: 1, edge: 'bottom' });
+    expect(map2WaveForDay(13)).toMatchObject({ count: Math.floor(waveForDay(13).count * 2.5), hp: 6, waves: 2 });
+  });
+});
+
+describe('D45 Big Mud Boys', () => {
+  // A clean 25 x 25 map without Map 2's starting dirt.
+  const open25 = () => createMap({ name: 'test', panelsX: 25, panelsY: 25 });
+  const bigNight = (w: Partial<WaveRow> = {}) => createNight(open25(), wave({ count: 0, big: 1, ...w }), { rng: () => 0 });
+  const runningBig = () => {
+    const n = bigNight({ big: 0 });
+    n.warningLeft = 0;
+    n.wavesSpawned = 1;
+    return n;
+  };
+
+  it('spawns on a 2x2 edge block with double HP, dirtying all 4 panels', () => {
+    const n = bigNight({ hp: 6 });
+    tickNight(n, 4);
+    const [b] = n.mudBoys;
+    expect([b.px, b.py, b.size, b.hp]).toEqual([0, 23, 2, 12]);
+    for (const [x, y] of [[0, 23], [1, 23], [0, 24], [1, 24]]) {
+      expect(panelRating(n.map, x, y)).toBe(-2);
+      expect(mudBoyAt(n, x, y)).toBe(b);
+    }
+  });
+
+  it('jumps 2 panels into a fresh block every 3 s, dirtying only the new 4', () => {
+    const n = runningBig();
+    const b = place(n, 4, 23, 6, 2);
+    tickNight(n, 3);
+    expect([b.px, b.py]).toEqual([4, 21]);
+    expect([4, 5].map((x) => [21, 22].map((y) => panelRating(n.map, x, y)))).toEqual([[-2, -2], [-2, -2]]);
+    expect(panelRating(n.map, 4, 23)).toBe(0);
+  });
+
+  it('hits never move it; at 0 HP it pops on its 4 panels and the 8 touching its sides', () => {
+    const n = runningBig();
+    const b = place(n, 10, 10, 2, 2);
+    n.shoot.max = n.shoot.count = 5;
+    expect(shootAt(n, 11, 11)).toBe('hit');
+    expect([b.px, b.py, b.hp]).toEqual([10, 10, 1]);
+    expect(shootAt(n, 10, 10)).toBe('hit');
+    expect(n.mudBoys).toEqual([]);
+    for (const [x, y] of [[10, 10], [11, 10], [10, 11], [11, 11]]) expect(panelRating(n.map, x, y)).toBe(-4);
+    for (const [x, y] of [[10, 9], [11, 9], [10, 12], [11, 12], [9, 10], [9, 11], [12, 10], [12, 11]]) {
+      expect(panelRating(n.map, x, y)).toBe(-2);
+    }
+    expect(panelRating(n.map, 9, 9)).toBe(0); // diagonals untouched
+  });
+
+  it('pushes small Mud Boys out of its landing block', () => {
+    const n = runningBig();
+    const b = place(n, 4, 20, 6, 2);
+    b.timer = 3;
+    const near = place(n, 4, 19);
+    const far = place(n, 5, 18);
+    near.timer = far.timer = -100;
+    tickNight(n, 0.01);
+    expect([b.px, b.py]).toEqual([4, 18]);
+    expect(pos(near)).toEqual([4, 17]);
+    expect(pos(far)).toEqual([5, 17]);
+  });
+
+  it('small Mud Boys can neither push it forward nor knock back into it', () => {
+    const n = runningBig();
+    const b = place(n, 4, 10, 6, 2);
+    b.timer = -100;
+    const behind = place(n, 4, 12);
+    behind.timer = 3;
+    tickNight(n, 0.01);
+    expect(pos(behind)).toEqual([4, 12]); // waits
+    const ahead = place(n, 5, 9);
+    ahead.timer = -100;
+    expect(shootAt(n, 5, 9)).toBe('hit');
+    expect(pos(ahead)).toEqual([5, 9]); // knockback blocked
+    expect([b.px, b.py]).toEqual([4, 10]);
+  });
+
+  it('a jump that would leave the map pops it where it stands', () => {
+    const n = runningBig();
+    const b = place(n, 4, 1, 6, 2);
+    b.timer = 3;
+    tickNight(n, 0.01);
+    expect(n.mudBoys).toEqual([]);
+    expect(panelRating(n.map, 4, 1)).toBe(-4);
+    expect(panelRating(n.map, 4, 0)).toBe(-2);
   });
 });

@@ -18,11 +18,16 @@ export interface MapState {
   waxed: Uint8Array;
 }
 
-export function createMap(def: MapDefinition, startValue = 0): MapState {
+export function createMap(def: MapDefinition, startValue = def.start ?? 0): MapState {
   const tilesX = def.panelsX * SIDE;
   const tilesY = def.panelsY * SIDE;
   const tiles = new Float64Array(tilesX * tilesY).fill(startValue);
   const waxed = new Uint8Array(def.panelsX * def.panelsY);
+  for (const r of def.filthy ?? []) {
+    for (let ty = r.py * SIDE; ty < (r.py + r.h) * SIDE; ty++) {
+      tiles.fill(TILE_MIN, ty * tilesX + r.px * SIDE, ty * tilesX + (r.px + r.w) * SIDE);
+    }
+  }
   return { panelsX: def.panelsX, panelsY: def.panelsY, tilesX, tilesY, tiles, waxed };
 }
 

@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
-import { waveForDay } from '../rules/config';
 import { MudBoy, NightState, createNight, shootAt, tickNight } from '../rules/nightPhase';
-import { firstDayIsFree, nightOptions, scoreNight } from '../rules/run';
+import { firstDayIsFree, nightOptions, scoreNight, waveForRun } from '../rules/run';
 import { COLORS, FONT, WIDTH } from '../ui';
 import { MapScene, PANEL } from './MapScene';
 
@@ -12,6 +11,7 @@ interface MudBoySprite {
   hp: Phaser.GameObjects.Graphics;
   px: number;
   py: number;
+  size: 1 | 2;
   shownHp: number;
 }
 
@@ -31,7 +31,7 @@ export class NightScene extends MapScene {
   }
 
   create() {
-    this.night = createNight(this.run.map, waveForDay(this.run.day), nightOptions(this.run));
+    this.night = createNight(this.run.map, waveForRun(this.run), nightOptions(this.run));
     this.sprites = new Map();
     this.deniedUntil = 0;
     this.facing = 1;
@@ -103,7 +103,7 @@ export class NightScene extends MapScene {
       else if (e.type === 'pop') {
         dirty = true;
         this.removeSprite(e.id);
-        this.popEffect(e.px, e.py);
+        this.popEffect(e.px, e.py, e.size);
       } else if (e.type === 'splat') {
         this.removeSprite(e.id, e.px, e.py);
         this.splatEffect(e.px, e.py);
@@ -121,7 +121,7 @@ export class NightScene extends MapScene {
         dirty = true;
         s.px = mb.px;
         s.py = mb.py;
-        const [x, y] = this.panelCenter(mb.px, mb.py);
+        const [x, y] = this.blockCenter(mb.px, mb.py, mb.size);
         this.tweens.killTweensOf(s.root);
         this.tweens.add({ targets: s.root, x, y, duration: 150, ease: 'Quad.easeOut' });
       }
@@ -143,26 +143,35 @@ export class NightScene extends MapScene {
     });
   }
 
+  // Centre of a size x size block of panels.
+  private blockCenter(px: number, py: number, size: number): [number, number] {
+    const [x, y] = this.panelCenter(px, py);
+    const half = ((size - 1) * PANEL) / 2;
+    return [x + half, y + half];
+  }
+
   // Placeholder Mud Boy (D28): a bouncing mud ball with glowing yellow eyes and HP pips.
+  // D45: a Big Mud Boy is the same model at double size over its 2x2 block.
   private makeMudBoy(mb: MudBoy): MudBoySprite {
     const body = this.add.graphics();
     body.fillStyle(0x4e2f14);
     body.fillCircle(0, 0, 19);
-    body.lineStyle(3, 0x2a1708);
+    // Light rim so they stay visible on mud-brown panels (D43 Map 2).
+    body.lineStyle(3, 0xffe0b2);
     body.strokeCircle(0, 0, 19);
     body.fillStyle(0xffeb3b);
     body.fillCircle(-7, -5, 5);
     body.fillCircle(7, -5, 5);
     body.fillStyle(0x000000);
     body.fillEllipse(0, 8, 14, 8);
-    const bob = this.add.container(0, 0, [body]);
-    this.tweens.add({ targets: bob, y: -4, duration: 300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    const bob = this.add.container(0, 0, [body]).setScale(mb.size);
+    this.tweens.add({ targets: bob, y: -4 * mb.size, duration: 300, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     const hp = this.add.graphics();
-    const [x, y] = this.panelCenter(mb.px, mb.py);
+    const [x, y] = this.blockCenter(mb.px, mb.py, mb.size);
     const root = this.add.container(x, y, [bob, hp]).setDepth(2);
     root.setScale(0);
     this.tweens.add({ targets: root, scale: 1, duration: 200, ease: 'Back.easeOut' });
-    const sprite = { root, hp, px: mb.px, py: mb.py, shownHp: -1 };
+    const sprite = { root, hp, px: mb.px, py: mb.py, size: mb.size, shownHp: -1 };
     this.drawHp(sprite, mb.hp);
     return sprite;
   }
@@ -174,7 +183,8 @@ export class NightScene extends MapScene {
     const w = 5;
     const left = -((hp * w) - 1) / 2;
     g.fillStyle(0xff5252);
-    for (let i = 0; i < hp; i++) g.fillRect(left + i * w, 20, w - 1, 4);
+    const top = 20 * s.size;
+    for (let i = 0; i < hp; i++) g.fillRect(left + i * w, top, w - 1, 4);
   }
 
   // A knocked-off Mud Boy slides out to its off-map spot before disappearing.
@@ -191,9 +201,9 @@ export class NightScene extends MapScene {
     this.tweens.add({ targets: s.root, x, y, alpha: 0, duration: 200, onComplete: () => s.root.destroy() });
   }
 
-  private popEffect(px: number, py: number) {
-    const [x, y] = this.panelCenter(px, py);
-    const blob = this.add.circle(x, y, PANEL * 0.4, 0x4e2f14).setDepth(3);
+  private popEffect(px: number, py: number, size: number) {
+    const [x, y] = this.blockCenter(px, py, size);
+    const blob = this.add.circle(x, y, PANEL * 0.4 * size, 0x4e2f14).setDepth(3);
     this.tweens.add({ targets: blob, scale: 2.6, alpha: 0, duration: 350, onComplete: () => blob.destroy() });
     this.floatText(x, y, 'POP!', '#ffcc80');
   }

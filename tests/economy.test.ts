@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BRUSH_AOE_SUPPED_UP, MAPS } from '../src/rules/config';
+import { BRUSH_AOE_SUPPED_UP, MAPS, WAVE_TABLE, map2WaveForDay } from '../src/rules/config';
 import { createDay, tickDay, tryMove, tryWax } from '../src/rules/dayPhase';
 import { createMap, isWaxed, panelRating } from '../src/rules/grid';
 import { createNight, mudBoyAt, tickNight } from '../src/rules/nightPhase';
@@ -8,6 +8,7 @@ import {
   claimVictory,
   isLastMap,
   nextMap,
+  waveForRun,
   dayOptions,
   firstDayIsFree,
   hasShopChanges,
@@ -36,13 +37,13 @@ describe('D02 ledger', () => {
     const run = newRun();
     expect(run.bank).toBe(0);
     expect(firstDayIsFree(run)).toBe(true);
-    expect(earn(run, 4)).toBe(4);
-    expect(unlockNext(run, 'reloadSpeed')).toBe('too-expensive'); // 4 < 5
+    expect(earn(run, 14)).toBe(14);
+    expect(unlockNext(run, 'reloadSpeed')).toBe('too-expensive'); // 14 < 15 (D41)
     startNextDay(run);
-    expect([run.bank, run.day]).toEqual([4, 2]); // D14
+    expect([run.bank, run.day]).toEqual([14, 2]); // D14
 
     earn(run, 1);
-    expect(unlockNext(run, 'reloadSpeed')).toBe('bought'); // 5 - 5 = 0 is fine
+    expect(unlockNext(run, 'reloadSpeed')).toBe('bought'); // 15 - 15 = 0 is fine
     expect(run.bank).toBe(0);
     startNextDay(run);
     expect([run.bank, run.day]).toEqual([0, 3]);
@@ -50,10 +51,10 @@ describe('D02 ledger', () => {
 
   it('levels unlock in order; the highest bought level is active', () => {
     const run = newRun();
-    run.bank = 100;
+    run.bank = 225;
     expect(unlockNext(run, 'timeManipulation')).toBe('bought');
     expect(unlockNext(run, 'timeManipulation')).toBe('bought');
-    expect(run.bank).toBe(55); // 15 + 30, one-time costs
+    expect(run.bank).toBe(45); // 45 + 135, one-time costs (D41)
     expect(dayOptions(run).dayLength).toBe(90);
     expect(unlockNext(run, 'bristles')).toBe('bought');
     expect(unlockNext(run, 'bristles')).toBe('max-level');
@@ -73,7 +74,7 @@ describe('D02 ledger', () => {
 
   it('loadout feeds the day and night', () => {
     const run = newRun();
-    run.bank = 200;
+    run.bank = 225;
     for (const id of ['extraScrubbers', 'scrubSpeed', 'brushPowa', 'brushSize', 'clipSize', 'reloadSpeed'] as const) {
       unlockNext(run, id);
     }
@@ -140,15 +141,15 @@ describe('Wax and Retractable Bristles (D30: +8)', () => {
 describe('RESET PURCHASES (D34)', () => {
   it('restores the bank and unlocks from when the night was scored', () => {
     const run = newRun();
-    earn(run, 23);
+    earn(run, 53);
     expect(hasShopChanges(run)).toBe(false);
     expect(unlockNext(run, 'scrubSpeed')).toBe('bought');
     expect(unlockNext(run, 'extraScrubbers')).toBe('bought');
-    expect(run.bank).toBe(8);
+    expect(run.bank).toBe(8); // 53 - 15 - 30
     expect(hasShopChanges(run)).toBe(true);
 
     resetPurchases(run);
-    expect(run.bank).toBe(23);
+    expect(run.bank).toBe(53);
     expect(run.unlocked.extraScrubbers).toBe(0);
     expect(run.unlocked.scrubSpeed).toBe(0);
     expect(hasShopChanges(run)).toBe(false);
@@ -207,8 +208,8 @@ describe('map victory and Map 2 (D15, D23, D13)', () => {
     run.day = 6;
     run.px = 5;
     nextMap(run);
-    expect([run.mapIndex, run.map.panelsX, run.px, run.py, run.day, run.bank, run.wax]).toEqual([1, 25, 0, 0, 6, 435, 2]);
-    expect(run.map.tiles.every((v) => v === 0)).toBe(true);
+    expect([run.mapIndex, run.map.panelsX, run.px, run.py, run.day, run.bank, run.wax]).toEqual([1, 25, 0, 0, 6, 390, 2]);
+    const fresh = [...run.map.tiles];
     expect(isLastMap(run)).toBe(true);
     expect(firstDayIsFree(run)).toBe(false);
 
@@ -216,8 +217,8 @@ describe('map victory and Map 2 (D15, D23, D13)', () => {
     startNextDay(run);
     earn2(run);
     tryAgain(run);
-    expect([run.day, run.bank, run.wax, run.unlocked.reloadSpeed, run.unlocked.clipSize]).toEqual([6, 435, 2, 2, 0]);
-    expect(run.map.tiles.every((v) => v === 0)).toBe(true);
+    expect([run.day, run.bank, run.wax, run.unlocked.reloadSpeed, run.unlocked.clipSize]).toEqual([6, 390, 2, 2, 0]);
+    expect([...run.map.tiles]).toEqual(fresh);
   });
 });
 
@@ -225,3 +226,48 @@ function earn2(run: ReturnType<typeof newRun>) {
   run.map.tiles.fill(2);
   scoreNight(run);
 }
+
+describe('D41 prices and D42 Map 1 locks', () => {
+  it('Map 1 sells only up to level 2 of the four counter upgrades; Map 2 sells the rest', () => {
+    const run = newRun();
+    run.bank = 10_000;
+    for (const id of ['extraScrubbers', 'scrubSpeed', 'clipSize', 'reloadSpeed'] as const) {
+      expect(unlockNext(run, id)).toBe('bought');
+      expect(unlockNext(run, id)).toBe('bought');
+      expect(unlockNext(run, id)).toBe('locked');
+      expect(run.unlocked[id]).toBe(2);
+    }
+    for (let i = 0; i < 3; i++) expect(unlockNext(run, 'brushPowa')).toBe('bought');
+    nextMap(run);
+    expect(unlockNext(run, 'scrubSpeed')).toBe('bought');
+    expect(unlockNext(run, 'scrubSpeed')).toBe('bought');
+    expect(unlockNext(run, 'scrubSpeed')).toBe('max-level');
+    expect(dayOptions(run).scrubDuration).toBe(0.85);
+  });
+});
+
+describe('D43 Map 2 starting dirt', () => {
+  it('starts at -4 with filthy -10 patches, and TRY AGAIN restores the same layout', () => {
+    const map = createMap(MAPS[1]);
+    expect(panelRating(map, 0, 0)).toBe(-4);
+    expect(panelRating(map, 11, 13)).toBe(-10); // inside the 5x5 centre patch
+    expect(panelRating(map, 14, 13)).toBe(-4); // just right of it
+    expect(createMap(MAPS[0]).tiles.every((v) => v === 0)).toBe(true);
+  });
+});
+
+describe('D44 wave table per map', () => {
+  it('Map 2 counts its own days from the first day played there, also after TRY AGAIN', () => {
+    const run = newRun();
+    run.day = 9;
+    expect(waveForRun(run)).toEqual(WAVE_TABLE[8]);
+    nextMap(run); // won on day 9
+    startNextDay(run); // day 10 = Map 2 day 1
+    expect(waveForRun(run)).toEqual(map2WaveForDay(1));
+    for (let i = 0; i < 5; i++) startNextDay(run);
+    expect(waveForRun(run).big).toBe(1); // Map 2 day 6
+    tryAgain(run);
+    startNextDay(run);
+    expect(waveForRun(run)).toEqual(map2WaveForDay(1));
+  });
+});
