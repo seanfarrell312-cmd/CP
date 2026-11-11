@@ -222,3 +222,24 @@ describe('D49 combo', () => {
     expect(day.combo).toBe(2);
   });
 });
+
+describe('D51 SLIP! keeps the combo', () => {
+  it('a SLIP! move neither adds to nor resets the combo', () => {
+    const map = createMap(MAPS[0]);
+    // Row 0 at 0 (scrubs give SCRUB!), panel (3,1) spotless for a SLIP!, panel (3,2) muddy for ICK!.
+    for (let ly = 0; ly < 4; ly++) for (let lx = 0; lx < 4; lx++) {
+      map.tiles[(4 + ly) * 40 + 12 + lx] = 8;
+      map.tiles[(8 + ly) * 40 + 12 + lx] = -6;
+    }
+    const day = createDay(map, { startedImmediately: true, scrubMax: 10, scrubDuration: 2, bristles: true, combo: true });
+    tryMove(day, 'right');
+    tryMove(day, 'right');
+    tryMove(day, 'right');
+    expect(day.combo).toBe(3);
+    expect(tryMove(day, 'down')).toBe('glided');
+    expect([day.feedback, day.combo]).toEqual(['slip', 3]);
+    expect(day.scrub.duration).toBeCloseTo(1.7);
+    tryMove(day, 'down');
+    expect([day.feedback, day.combo]).toEqual(['ick', 0]);
+  });
+});

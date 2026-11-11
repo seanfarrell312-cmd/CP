@@ -117,7 +117,8 @@ export function tryMove(day: DayState, dir: Direction): MoveResult {
     // D15/D23: checked after each scrub; victory stops the clock at once.
     if (isFullyClean(day.map)) day.victory = day.ended = true;
   }
-  if (day.comboEnabled) setCombo(day, day.feedback === 'scrub' ? day.combo + 1 : 0);
+  // D51: SLIP! keeps the combo as it is.
+  if (day.comboEnabled && day.feedback !== 'slip') setCombo(day, day.feedback === 'scrub' ? day.combo + 1 : 0);
   return free ? 'glided' : 'moved';
 }
 

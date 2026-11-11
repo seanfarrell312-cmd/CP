@@ -151,10 +151,10 @@ export function waveForDay(day: number): WaveRow {
 }
 
 // D44: Map 2 has its own table, by day on Map 2 (its first day is 1): the Map 1 row for that
-// day with 2.5x as many small Mud Boys (rounded down), plus D45's Big Mud Boys from Map 2 day 6.
+// day with 2.5x as many small Mud Boys (rounded down), plus Big Mud Boys from Map 2 day 1 (D45/D50).
 export function map2WaveForDay(mapDay: number): WaveRow {
   const base = waveForDay(mapDay);
-  const big = mapDay < 6 ? 0 : mapDay < 12 ? 1 : mapDay < 18 ? 2 : 3;
+  const big = mapDay <= 6 ? 1 : mapDay <= 12 ? 2 : 3;
   return { ...base, count: Math.floor(base.count * 2.5), big };
 }
 

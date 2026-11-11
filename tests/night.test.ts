@@ -218,9 +218,9 @@ describe('shooting', () => {
 });
 
 describe('D44 Map 2 wave table', () => {
-  it('counts by Map 2 day: 2.5x the small Mud Boys, Big ones from day 6', () => {
-    const rows = [1, 5, 6, 11, 12, 17, 18, 40].map((d) => map2WaveForDay(d));
-    expect(rows.map((r) => r.big)).toEqual([0, 0, 1, 1, 2, 2, 3, 3]);
+  it('counts by Map 2 day: 2.5x the small Mud Boys, Big ones from day 1 (D50)', () => {
+    const rows = [1, 6, 7, 12, 13, 40].map((d) => map2WaveForDay(d));
+    expect(rows.map((r) => r.big)).toEqual([1, 1, 2, 2, 3, 3]);
     expect(rows[0]).toMatchObject({ count: 7, hp: 3, waves: 1, edge: 'bottom' });
     expect(map2WaveForDay(13)).toMatchObject({ count: Math.floor(waveForDay(13).count * 2.5), hp: 6, waves: 2 });
   });

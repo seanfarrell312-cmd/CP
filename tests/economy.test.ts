@@ -265,7 +265,7 @@ describe('D44 wave table per map', () => {
     startNextDay(run); // day 10 = Map 2 day 1
     expect(waveForRun(run)).toEqual(map2WaveForDay(1));
     for (let i = 0; i < 5; i++) startNextDay(run);
-    expect(waveForRun(run).big).toBe(1); // Map 2 day 6
+    expect(waveForRun(run).big).toBe(1); // Map 2 day 6 (D50)
     tryAgain(run);
     startNextDay(run);
     expect(waveForRun(run)).toEqual(map2WaveForDay(1));

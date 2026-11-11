@@ -282,6 +282,18 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
 **Overrides:** D01's upgrade list (adds a ninth upgrade).
 **Test:** With COMBO and Scrubbing Speed 2.5 s, three SCRUB! moves set the timer to 2.125 s; an ICK! move sets it back to 2.5 s.
 
+### D50: Big Mud Boys from Map 2's first night (confirmed 2026-11-10, from play test 8)
+**Why:** Play test 8 finished the game on Day 13 without meeting a Big Mud Boy.
+**Decision:** Big Mud Boys per wave on Map 2 by Map 2 day: **days 1-6: 1; days 7-12: 2; day 13 on: 3** (the D45 steps of 6 days, starting on day 1).
+**Overrides:** D45 rule 1 (the count).
+**Test:** Map 2 day 1 night has 1 Big Mud Boy and 7 small ones; Map 2 day 7 has 2 Big Mud Boys.
+
+### D51: SLIP! keeps the combo (confirmed 2026-11-10, from play test 8)
+**Why:** Sliding across cleaned panels to reach the next dirty area should keep momentum.
+**Decision:** A SLIP! move (a free move with Retractable Bristles owned) **leaves the combo unchanged**: it neither adds to it nor resets it, and the Scrub timer cut stays. Every other non-SCRUB! move still resets the combo (D49).
+**Overrides:** D49 rule 2 for SLIP!.
+**Test:** Combo 3, then a SLIP! move: combo still 3, timer still cut 15%. Then an ICK! move: combo 0.
+
 ## Still open
 
 - Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Play test 7 (D41-D45) finished on Day 16 with 6,936 POWA banked after 15-30 minutes; Map 2 felt grindy from about Day 12 and later prices may need lowering. D46-D49 respond to the early game and engagement. Owner to judge in play testing; daily dust settling remains an unused idea.
@@ -311,3 +323,4 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
   - No sounds yet: play test 7 mentioned sounds but did not describe any.
   - The fence takes about 2 s to build, and the Score screen follows about 1.5 s after it closes.
   - The combo counter shows only when COMBO is owned; when a combo breaks it flashes red and shows 0.
+  - D50 keeps the D45 6-day steps for the Big Mud Boy count, moved to start on Map 2 day 1.
