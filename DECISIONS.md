@@ -294,6 +294,12 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
 **Overrides:** D49 rule 2 for SLIP!.
 **Test:** Combo 3, then a SLIP! move: combo still 3, timer still cut 15%. Then an ICK! move: combo 0.
 
+### D52: Combo counter in the top bar (confirmed 2026-11-10, from play test 9)
+**Why:** On the left edge it covered part of Map 2 on a normal monitor.
+**Decision:** The combo counter (COMBO, the animated colour-changing number and the SCRUB TIME cut) sits **in the top bar between the Reload counters and the day timer**, and never covers the map or Scrubby. The day/night timer bar moves right and gets a little shorter to make room.
+**Overrides:** D49 rule 4 (placement).
+**Test:** Map 2 day with COMBO: the counter is in the top bar and no map panel is hidden.
+
 ## Still open
 
 - Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Play test 7 (D41-D45) finished on Day 16 with 6,936 POWA banked after 15-30 minutes; Map 2 felt grindy from about Day 12 and later prices may need lowering. D46-D49 respond to the early game and engagement. Owner to judge in play testing; daily dust settling remains an unused idea.

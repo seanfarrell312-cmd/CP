@@ -3,7 +3,7 @@ import { COMBO, READY_COUNTDOWN, WAX_COLOR } from '../rules/config';
 import { DayState, Direction, MoveFeedback, createDay, tickDay, tryMove, tryWax } from '../rules/dayPhase';
 import { claimVictory, dayOptions, firstDayIsFree } from '../rules/run';
 import { COLORS, FONT, HEIGHT, WIDTH } from '../ui';
-import { MapScene } from './MapScene';
+import { HUD_HEIGHT, MapScene } from './MapScene';
 
 const KEYS: Record<string, Direction> = {
   KeyW: 'up',
@@ -21,8 +21,8 @@ const FEEDBACK: Record<Exclude<MoveFeedback, 'none'>, [string, string]> = {
   slip: ['SLIP!', '#fff176'],
 };
 
-const COMBO_X = 32;
-const COMBO_Y = 250;
+// D52: centre of the combo counter, in the top bar between Reload and the day timer.
+const COMBO_X = 480;
 
 export class DayScene extends MapScene {
   private day!: DayState;
@@ -183,15 +183,16 @@ export class DayScene extends MapScene {
     this.tweens.add({ targets: t, y: y - 60, alpha: 0, delay: 250, duration: 550, onComplete: () => t.destroy() });
   }
 
-  // D49: the combo counter on the left edge, only with COMBO owned.
+  // D49/D52: the combo counter in the top bar, only with COMBO owned; it never covers the map.
   private createCombo() {
     this.comboValue = this.comboCut = undefined;
     if (!this.day.comboEnabled) return;
-    this.toUi(this.add.rectangle(COMBO_X - 12, COMBO_Y - 8, 172, 150, 0x000000, 0.45).setOrigin(0).setDepth(4));
-    const style = { fontFamily: FONT, color: '#ffffff', stroke: '#000000', strokeThickness: 5 };
-    this.uiText(COMBO_X + 74, COMBO_Y, 'COMBO', { ...style, fontSize: '22px' }).setOrigin(0.5, 0).setDepth(5);
-    this.comboValue = this.uiText(COMBO_X + 74, COMBO_Y + 62, 'x0', { ...style, fontSize: '52px' }).setOrigin(0.5).setDepth(5);
-    this.comboCut = this.uiText(COMBO_X + 74, COMBO_Y + 106, '', { ...style, fontSize: '15px', color: '#5BC2E7', strokeThickness: 4 })
+    this.toUi(this.add.rectangle(COMBO_X, HUD_HEIGHT / 2, 140, 82, 0x3e2723, 0.12).setDepth(4));
+    this.uiText(COMBO_X, 8, 'COMBO', { fontFamily: FONT, fontSize: '18px', color: '#3e2723' }).setOrigin(0.5, 0).setDepth(5);
+    this.comboValue = this.uiText(COMBO_X, 47, 'x0', {
+      fontFamily: FONT, fontSize: '36px', color: '#ffffff', stroke: '#000000', strokeThickness: 5,
+    }).setOrigin(0.5).setDepth(5);
+    this.comboCut = this.uiText(COMBO_X, 72, '', { fontFamily: FONT, fontSize: '13px', color: '#1565c0' })
       .setOrigin(0.5, 0).setDepth(5);
     this.updateCombo();
   }
@@ -206,7 +207,7 @@ export class DayScene extends MapScene {
     this.comboCut.setText(cut > 0 ? `SCRUB TIME -${cut}%` : '');
     if (before === value.text) return;
     this.tweens.killTweensOf(value);
-    value.setScale(1).setX(COMBO_X + 74);
+    value.setScale(1).setX(COMBO_X);
     if (combo > 0) {
       value.setColor(combo >= COMBO.maxSteps ? '#fff176' : '#ffffff');
       this.tweens.add({ targets: value, scale: 1.3, duration: 90, yoyo: true });

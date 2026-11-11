@@ -13,6 +13,9 @@ const TILE = (PANEL - GUTTER) / TILES_PER_PANEL_SIDE;
 const TURRET_MARGIN = 60;
 // World space kept around the map for the turret, SPLAT! text and camera edges.
 const WORLD_PAD = 40;
+// D52: the day timer moves right to leave room for the combo counter in the top bar.
+const DAYLIGHT_X = 570;
+const DAYLIGHT_W = 190;
 
 const TILE_FILL: Record<number, number> = Object.fromEntries(
   Object.entries(TILE_COLORS).map(([level, color]) => [level, hex(color)]),
@@ -179,8 +182,8 @@ export abstract class MapScene extends Phaser.Scene {
 
     this.toUi(this.add.rectangle(0, 0, WIDTH, HUD_HEIGHT, COLORS.hudBg).setOrigin(0).setStrokeStyle(6, COLORS.hudEdge));
     this.hud = this.toUi(this.add.graphics());
-    this.hudLabels = [label(40, 12, 'Scrubber'), label(240, 12, 'Reload'), label(480, 12, '')];
-    this.secondsText = label(760, 40, '');
+    this.hudLabels = [label(40, 12, 'Scrubber'), label(240, 12, 'Reload'), label(DAYLIGHT_X, 12, '')];
+    this.secondsText = label(DAYLIGHT_X + DAYLIGHT_W + 14, 40, '');
     this.powainText = label(940, 14, '');
     label(940, 52, `DAY: ${this.run.day}`);
     this.waxText = label(1080, 52, '');
@@ -204,7 +207,7 @@ export abstract class MapScene extends Phaser.Scene {
     this.counters(g, 52, p.scrub, scrubMax, COLORS.scrub, 0x1565c0, p.denied);
     this.counters(g, 252, p.shoot, shootMax, COLORS.reload, 0x8e0000, p.denied);
 
-    this.bar(g, 480, 44, 260, p.fraction, p.color);
+    this.bar(g, DAYLIGHT_X, 44, DAYLIGHT_W, p.fraction, p.color);
     this.secondsText.setText(`${Math.ceil(p.seconds)}s`);
     this.powainText.setText(`POWA-IN: ${expectedPowain(this.run.map)}`);
     this.waxText.setText(p.wax > 0 ? `WAX: ${p.wax}` : '');
