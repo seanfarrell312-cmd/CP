@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { COMBO, READY_COUNTDOWN, WAX_COLOR } from '../rules/config';
 import { DayState, Direction, MoveFeedback, createDay, tickDay, tryMove, tryWax } from '../rules/dayPhase';
-import { claimVictory, dayOptions, firstDayIsFree } from '../rules/run';
+import { claimVictory, dayOptions, firstDayIsFree, needsDayTutorial } from '../rules/run';
 import { COLORS, FONT, HEIGHT, WIDTH } from '../ui';
 import { HUD_HEIGHT, MapScene } from './MapScene';
 
@@ -33,6 +33,8 @@ export class DayScene extends MapScene {
   private deniedUntil = 0;
   private comboValue?: Phaser.GameObjects.Text;
   private comboCut?: Phaser.GameObjects.Text;
+  // D53: the Day 1 tutorial; input waits while it is open.
+  private tutorial?: Phaser.GameObjects.Container;
 
   constructor() {
     super('Day');
@@ -50,21 +52,32 @@ export class DayScene extends MapScene {
     this.createHud();
     this.createCombo();
 
-    if (firstDayIsFree(run)) {
-      // Day 1: the clock waits for the first valid move.
-      this.hint = this.uiText(WIDTH / 2, HEIGHT - 4, 'Press W A S D to move and scrub. The day starts on your first move.', {
-        fontFamily: FONT,
-        fontSize: '18px',
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 4,
-      }).setOrigin(0.5, 1);
+    this.tutorial = undefined;
+    if (needsDayTutorial(run)) {
+      this.tutorial = this.showTutorial('S01.dayTutorial', () => {
+        run.onboarded.day = true;
+        this.tutorial = undefined;
+        this.showFirstDayHint();
+      });
+    } else if (firstDayIsFree(run)) {
+      this.showFirstDayHint();
     } else {
       // Later days open with READY / SET / SCRUB!; the clock and input start together.
       this.countdown = READY_COUNTDOWN;
       this.countdownText = this.banner('READY');
     }
     this.refreshHud();
+  }
+
+  // Day 1: the clock waits for the first valid move.
+  private showFirstDayHint() {
+    this.hint = this.uiText(WIDTH / 2, HEIGHT - 4, 'Press W A S D to move and scrub. The day starts on your first move.', {
+      fontFamily: FONT,
+      fontSize: '18px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4,
+    }).setOrigin(0.5, 1);
   }
 
   update(_time: number, delta: number) {
@@ -86,11 +99,11 @@ export class DayScene extends MapScene {
   }
 
   protected canPause() {
-    return !this.day.ended;
+    return !this.day.ended && !this.tutorial;
   }
 
   protected onKey(event: KeyboardEvent) {
-    if (this.countdown > 0) return;
+    if (this.countdown > 0 || this.tutorial) return;
     if (event.code === 'Space') {
       if (tryWax(this.day) === 'waxed') {
         this.drawTiles();

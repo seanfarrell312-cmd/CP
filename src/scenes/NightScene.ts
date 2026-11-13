@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { MudBoy, NightState, createNight, shootAt, tickNight } from '../rules/nightPhase';
-import { firstDayIsFree, nightOptions, scoreNight, waveForRun } from '../rules/run';
+import { needsNightTutorial, nightOptions, scoreNight, waveForRun } from '../rules/run';
 import { COLORS, FONT, WIDTH } from '../ui';
 import { MapScene, PANEL } from './MapScene';
 
@@ -22,7 +22,7 @@ export class NightScene extends MapScene {
   private sprites = new Map<number, MudBoySprite>();
   private warning?: Phaser.GameObjects.Text;
   private tip?: Phaser.GameObjects.Text;
-  // D38: Night 1 waits behind the instruction card.
+  // D38/D53: Night 1 of a new game waits behind the supervisor tutorial.
   private briefing?: Phaser.GameObjects.Container;
   private deniedUntil = 0;
 
@@ -42,14 +42,12 @@ export class NightScene extends MapScene {
     this.fitBigMap();
     this.turret = this.makeTurret();
     this.createHud();
-    if (firstDayIsFree(this.run)) {
-      this.briefing = this.makeOverlay('NIGHT TIME!', [
-        'Mud Boys crawl in from the edges and dirty every panel they enter.',
-        'CLICK a Mud Boy with the mouse to fire the turret at it.',
-        'Each shot uses a Shot counter. The Reload bar refills them.',
-        'A hit knocks it back: off the map is a SPLAT!',
-        'At 0 HP it POPs, splashing mud on nearby panels.',
-      ], [['GOT IT', () => this.startNight(), true]]);
+    this.briefing = undefined;
+    if (needsNightTutorial(this.run)) {
+      this.briefing = this.showTutorial('S01.nightTutorial', () => {
+        this.run.onboarded.night = true;
+        this.startNight();
+      });
     } else this.startNight();
 
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.onClick(p));

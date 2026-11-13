@@ -300,6 +300,23 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
 **Overrides:** D49 rule 4 (placement).
 **Test:** Map 2 day with COMBO: the counter is in the top bar and no map panel is hidden.
 
+### D53: Story onboarding (confirmed 2026-11-12, story expansion Phase 1)
+**Why:** The story expansion (`STORY_EXPANSION_SPEC.md`, STORY-D02/D04/D05/D24) adds an opening comic, supervisor terminal scenes and step-by-step tutorials.
+**Decision:**
+1. START and PLAY AGAIN play the three-panel emergency-power comic, flash **Emergency POWA Active**, then the green supervisor boot terminal, then Day 1. The bank still starts at 0 (D18); nothing is credited.
+2. Day 1 opens with a **5-page tutorial** over the map. While it is open, game input is blocked; the Day 1 clock still starts only on the first valid move (unchanged).
+3. The **7-page Night 1 tutorial replaces the D38 NIGHT TIME! card** in the same paused gate. GOT IT leads to the unchanged HERE THEY COME! warning and wave timing (D12).
+4. Both tutorials show **once per new game**: TRY AGAIN on Map 1 goes back to a free Day 1 without them.
+5. After Map 1's MAP 1 COMPLETE! and NEXT MAP, and after Map 2's Score screen, a green supervisor terminal plays before the Map 2 upgrade screen / THANK YOU FOR PLAYING!. Payouts, carry-over and checkpoints are unchanged (D13, D23).
+6. Story text types out: one click finishes the line, the next click advances. Tutorials end on **GOT IT**. A **SKIP** button appears only on story scenes already watched this session (memory only, D24).
+**Overrides:** D38 (card content and its replay after TRY AGAIN).
+**Test:** New game: comic, terminal, Day 1 tutorial; the clock waits for the first move after GOT IT. TRY AGAIN on Map 1: no tutorials. Night 1 tutorial, then HERE THEY COME! with wave 1 at t = 2 s.
+
+### D54: Power Panel labels (confirmed 2026-11-12, story expansion Phase 1)
+**Decision:** Player-facing text calls Map 1 and Map 2 **Power Panel 1** and **Power Panel 2** (Score screen, map-complete screen, TRY AGAIN dialog, end screen, story text). Code, data and this log keep "Map 1 / Map 2".
+**Overrides:** On-screen map names.
+**Test:** Win Map 1: the Score screen says "Power Panel 1 is SPOTLESS!" and the next screen "POWER PANEL 1 COMPLETE!".
+
 ## Still open
 
 - Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Play test 7 (D41-D45) finished on Day 16 with 6,936 POWA banked after 15-30 minutes; Map 2 felt grindy from about Day 12 and later prices may need lowering. D46-D49 respond to the early game and engagement. Owner to judge in play testing; daily dust settling remains an unused idea.
@@ -330,3 +347,8 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
   - The fence takes about 2 s to build, and the Score screen follows about 1.5 s after it closes.
   - The combo counter shows only when COMBO is owned; when a combo breaks it flashes red and shows 0.
   - D50 keeps the D45 6-day steps for the Big Mud Boy count, moved to start on Map 2 day 1.
+- Story Phase 1 derived details (D53 build), flagged for owner review:
+  - The comic is placeholder art drawn in code; SHLOOP and CLUNK are on-screen captions (no audio, D28). Each comic panel holds about 1.6 s, and a click moves to the next one.
+  - The Day 1 "Press W A S D" hint line still shows after the tutorial closes.
+  - Story text types at about 40 characters per second.
+  - Later story stages (S03 onward) are not started; see `STORY_EXPANSION_SPEC.md` for their open items.

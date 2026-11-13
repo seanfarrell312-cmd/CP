@@ -28,7 +28,8 @@ export class TitleScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    addButton(this, WIDTH / 2, HEIGHT / 2 + 60, 'START', () => this.scene.start('Day', { run: newRun() }));
+    // D53: a new game opens with the emergency-power comic.
+    addButton(this, WIDTH / 2, HEIGHT / 2 + 60, 'START', () => this.scene.start('Intro', { run: newRun() }));
     // Options are disabled in the demo.
     addButton(this, WIDTH / 2, HEIGHT / 2 + 140, 'OPTIONS', () => {}, false);
   }

@@ -22,6 +22,8 @@ export interface PanelRect {
 
 export interface MapDefinition {
   name: string;
+  // D54: the player-facing name.
+  label: string;
   panelsX: number;
   panelsY: number;
   // Starting tile cleanliness (default 0), and blocks that start at TILE_MIN instead.
@@ -30,10 +32,11 @@ export interface MapDefinition {
 }
 
 export const MAPS: MapDefinition[] = [
-  { name: 'Map 1', panelsX: 10, panelsY: 10 },
+  { name: 'Map 1', label: 'Power Panel 1', panelsX: 10, panelsY: 10 },
   // D43: Map 2 starts dirty, with a fixed set of filthy patches.
   {
     name: 'Map 2',
+    label: 'Power Panel 2',
     panelsX: 25,
     panelsY: 25,
     start: -4,

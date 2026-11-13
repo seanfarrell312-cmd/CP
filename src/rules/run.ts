@@ -41,6 +41,8 @@ export interface RunState {
   checkpoint: Checkpoint;
   // What RESET PURCHASES restores (D34): the state when the upgrade screen opened.
   shopStart: Checkpoint;
+  // D53: onboarding already shown in this game. Not part of the checkpoint, so TRY AGAIN keeps it.
+  onboarded: { day: boolean; night: boolean };
 }
 
 const noLevels = (): Levels =>
@@ -59,6 +61,7 @@ export function newRun(): RunState {
     firstMapDay: 1,
     checkpoint: undefined!,
     shopStart: undefined!,
+    onboarded: { day: false, night: false },
   };
   run.checkpoint = snapshot(run);
   run.shopStart = snapshot(run);
@@ -97,6 +100,15 @@ export function hasShopChanges(run: RunState): boolean {
     run.wax !== s.wax ||
     UPGRADES.some((u) => run.unlocked[u.id] !== s.unlocked[u.id])
   );
+}
+
+// D53: the Day 1 / Night 1 tutorials show once per new game, never after TRY AGAIN.
+export function needsDayTutorial(run: RunState): boolean {
+  return firstDayIsFree(run) && !run.onboarded.day;
+}
+
+export function needsNightTutorial(run: RunState): boolean {
+  return firstDayIsFree(run) && !run.onboarded.night;
 }
 
 // Map 1's checkpoint starts with the free Day 1 instead of an upgrade screen.

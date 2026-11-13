@@ -3,7 +3,10 @@ import { TILE_COLORS, TILES_PER_PANEL_SIDE, WAX_COLOR } from '../rules/config';
 import { CounterBank, rechargeProgress } from '../rules/counterBank';
 import { colorLevel, expectedPowain, getTile, isWaxed } from '../rules/grid';
 import { RunState, upgradeValue, newRun } from '../rules/run';
+import { DialogCursor, markSeen, wasSeen } from '../story/dialog';
+import { SCRIPT } from '../story/script';
 import { COLORS, FONT, HEIGHT, WIDTH, addButton, hex } from '../ui';
+import { TERMINAL_FONT, TERMINAL_GREEN } from './TerminalScene';
 
 export const HUD_HEIGHT = 96;
 export const PANEL = 52; // px per panel, including the gutter
@@ -301,6 +304,67 @@ export abstract class MapScene extends Phaser.Scene {
     })
       .setOrigin(0.5)
       .setDepth(5);
+  }
+
+  // D53: a multi-page supervisor tutorial over the map. It swallows every click (HUD included);
+  // the caller blocks keys and the clock while it is open. One click finishes the typing line,
+  // the next one advances; the last page's button says GOT IT and ends it once.
+  protected showTutorial(id: 'S01.dayTutorial' | 'S01.nightTutorial', onDone: () => void): Phaser.GameObjects.Container {
+    const cursor = new DialogCursor(SCRIPT[id]);
+    const cx = WIDTH / 2;
+    const cy = HUD_HEIGHT + (HEIGHT - HUD_HEIGHT) / 2;
+    const W = 860;
+    const H = 300;
+    const left = cx - W / 2;
+    const top = cy - H / 2;
+    const backdrop = this.add.rectangle(0, 0, WIDTH, HEIGHT, COLORS.dim, 0.45).setOrigin(0).setInteractive();
+    const box = this.add.rectangle(cx, cy, W, H, 0x050a06, 0.94).setStrokeStyle(4, 0x1f8a3c).setInteractive();
+    const header = this.add.text(left + 24, top + 18, 'SUPERVISOR', { fontFamily: TERMINAL_FONT, fontSize: '20px', color: '#1f8a3c' });
+    const page = this.add.text(left + W - 24, top + 18, '', { fontFamily: TERMINAL_FONT, fontSize: '20px', color: '#1f8a3c' }).setOrigin(1, 0);
+    const body = this.add.text(left + 24, top + 58, '', {
+      fontFamily: TERMINAL_FONT, fontSize: '26px', color: TERMINAL_GREEN, wordWrap: { width: W - 48 }, lineSpacing: 6,
+    });
+    const button = addButton(this, left + W - 110, top + H - 36, 'NEXT', () => step()).setFontSize(22);
+    const items: Phaser.GameObjects.GameObject[] = [backdrop, box, header, page, body, button];
+
+    const container = this.toUi(this.add.container(0, 0, items).setDepth(20));
+    let closed = false;
+    const render = () => {
+      body.setText(cursor.text);
+      page.setText(`${cursor.index + 1} / ${cursor.lines.length}`);
+      button.setText(cursor.isLast ? 'GOT IT' : 'NEXT');
+      button.setAlpha(cursor.typing ? 0.6 : 1);
+    };
+    const close = () => {
+      if (closed) return;
+      closed = true;
+      markSeen(id);
+      this.events.off(Phaser.Scenes.Events.UPDATE, tick);
+      container.destroy();
+      onDone();
+    };
+    const step = () => {
+      if (cursor.click() === 'done') close();
+      else render();
+    };
+    const tick = (_t: number, delta: number) => {
+      cursor.tick(delta / 1000);
+      render();
+    };
+    backdrop.on('pointerup', step);
+    box.on('pointerup', step);
+    if (wasSeen(id)) {
+      const skip = this.add
+        .text(left + 24, top + H - 36, '[ SKIP ]', { fontFamily: TERMINAL_FONT, fontSize: '20px', color: '#1f8a3c' })
+        .setOrigin(0, 0.5)
+        .setInteractive({ useHandCursor: true });
+      skip.on('pointerup', () => cursor.skip() === 'done' && close());
+      container.add(this.toUi(skip));
+    }
+    this.events.on(Phaser.Scenes.Events.UPDATE, tick);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.UPDATE, tick));
+    render();
+    return container;
   }
 
   protected uiText(x: number, y: number, text: string, style: Phaser.Types.GameObjects.Text.TextStyle) {

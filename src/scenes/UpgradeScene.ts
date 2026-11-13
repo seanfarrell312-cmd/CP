@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { UPGRADES, UpgradeDef, UpgradeId, WAX_PACKS } from '../rules/config';
+import { MAPS, UPGRADES, UpgradeDef, UpgradeId, WAX_PACKS } from '../rules/config';
 import {
   PurchaseResult,
   RunState,
@@ -189,7 +189,7 @@ export class UpgradeScene extends Phaser.Scene {
   // D13: TRY AGAIN loses everything since arriving at this map, so ask first.
   private confirmTryAgain() {
     const { run } = this;
-    const where = run.mapIndex === 0 ? 'Start Map 1 again from Day 1?' : `Go back to Day ${run.checkpoint.day}?`;
+    const where = run.mapIndex === 0 ? `Start ${MAPS[0].label} again from Day 1?` : `Go back to Day ${run.checkpoint.day}?`;
     const items: Phaser.GameObjects.GameObject[] = [
       this.add.rectangle(0, 0, WIDTH, HEIGHT, COLORS.dim, 0.7).setOrigin(0).setInteractive(),
       this.add.text(WIDTH / 2, 250, where, { fontFamily: FONT, fontSize: '40px', color: '#ffffff' }).setOrigin(0.5),
