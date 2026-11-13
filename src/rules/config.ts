@@ -56,12 +56,13 @@ export const MAPS: MapDefinition[] = [
     ],
   },
   // D55: the Emergency Panels, from the owner's sketch. 140 Panels in 7 sections around the dark facility.
+  // D58: they start fully filthy.
   {
     name: 'Map 3',
     label: 'Emergency Panels',
     panelsX: 37,
     panelsY: 15,
-    start: -4,
+    start: -10,
     startPanel: [3, 13],
     scenery: 'facility',
     sections: [

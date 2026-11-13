@@ -21,12 +21,12 @@ function cleanSection(map: MapState, s?: number) {
 const wave = (w: Partial<WaveRow> = {}): WaveRow => ({ count: 1, edge: 'bottom', destination: 'top', hp: 3, waves: 1, ...w });
 
 describe('D55 Map 3 layout', () => {
-  it('has 140 Panels in 7 sections, all at -4, with 6 doors', () => {
+  it('has 140 Panels in 7 sections, all at -10 (D58), with 6 doors', () => {
     const map = map3();
     expect(MAPS[2].label).toBe('Emergency Panels');
     expect(panelCount(map)).toBe(140);
     expect(new Set([...map.section].filter((s) => s >= 0)).size).toBe(7);
-    expect(panelRating(map, 3, 13)).toBe(-4);
+    expect(panelRating(map, 3, 13)).toBe(-10);
     expect(map.doors.map((d) => [d.a, d.b])).toEqual([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6]]);
     expect(map.doors.every((d) => !d.open)).toBe(true);
     expect(isPanel(map, 8, 8)).toBe(false); // the building
@@ -132,6 +132,8 @@ describe('D56 Map 3 nights', () => {
   it('a Mud Boy walking into a door pops on the Panel before it, even when the door is open', () => {
     const map = map3();
     map.doors[0].open = true;
+    // P(29,2) in F starts at 0, so the pop splash next door shows.
+    for (let ty = 8; ty < 12; ty++) map.tiles.fill(0, ty * map.tilesX + 29 * 4, ty * map.tilesX + 30 * 4);
     // Right-side outer Panels by row: (25,0), (33,1), (33,2), ... so this picks (33,2).
     const n = createNight(map, wave({ count: 1, edge: 'right', destination: 'left' }), { rng: () => 0.16 });
     tickNight(n, 4.01); // spawned
@@ -140,8 +142,8 @@ describe('D56 Map 3 nights', () => {
     // Walk it left across G: it pops at x 30 instead of entering corridor F.
     for (let i = 0; i < 5; i++) tickNight(n, 3);
     expect(n.mudBoys).toHaveLength(0);
-    expect(panelRating(map, 30, mb.py)).toBeLessThan(-4);
-    expect(panelRating(map, 29, 2)).toBe(-6); // the pop splash still lands in F
+    expect(panelRating(map, 30, mb.py)).toBe(-10);
+    expect(panelRating(map, 29, 2)).toBe(-2); // the pop splash still lands in F
   });
 
   it('a knockback into a door is a SPLAT!, and pops never dirty scenery', () => {
@@ -156,7 +158,7 @@ describe('D56 Map 3 nights', () => {
     expect(shootAt(n, 7, 1)).toBe('hit');
     expect(n.events.some((e) => e.type === 'splat')).toBe(true);
     applyMud(map, 8, 8, -4); // scenery
-    expect(map.tiles[8 * 4 * map.tilesX + 8 * 4]).toBe(-4);
+    expect(map.tiles[8 * 4 * map.tilesX + 8 * 4]).toBe(-10);
   });
 
   it('Big Mud Boys spawn on 2x2 blocks inside one section', () => {

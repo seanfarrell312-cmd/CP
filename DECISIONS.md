@@ -345,6 +345,18 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
 **Overrides:** D23 and D53 rule 5 (Map 2 is no longer the last map), D48 (no fence on Map 3).
 **Test:** Win Map 2: Score, POWER PANEL 2 COMPLETE!, NEXT MAP, S02 terminal, Map 3 upgrade screen. Win Map 3: +560 once, reveal, yellow then green terminal, THANK YOU.
 
+### D58: Map 3 starts filthy (confirmed 2026-11-13, from play test 10)
+**Why:** A fully upgraded Scrubby cleared Map 3 on its first day, so the player never saw a night there.
+**Decision:** Every Map 3 Panel starts at **-10** (the lowest a tile can go) instead of -4. With Brush POWA 8 and the Supped UP brush that is 3 scrubs a Panel, about 420 for the map, which is more than most players can press in one 100 s day. Nothing else changes.
+**Overrides:** D55 rule 3 (starting dirt).
+**Test:** A new Map 3: every Panel is rated -10.
+
+### D59: The facility reveal lifts shadows (confirmed 2026-11-13, from play test 10)
+**Why:** In the third reveal step the streaks and the mess grew and stretched into place, so mud and ground that should be still looked like they moved.
+**Decision:** The facility art is drawn complete from the start and hidden under dark shade. Each reveal step **fades its shade away**, like lights coming on: nothing grows, stretches, moves or changes colour. The three steps and their order stay as in D57: (a) lamps, upper wall and the CLEAN POWA CO. sign (still wiped on left to right); (b) the logo with its graffiti and WHY?; (c) the lower wall, windows, door, mess and walkway together.
+**Overrides:** D57 rule 2 (how the reveal animates).
+**Test:** Win Map 3: in step 3 the streaks and the mess appear in their final place and size as the shade lifts.
+
 ## Still open
 
 - Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Play test 7 (D41-D45) finished on Day 16 with 6,936 POWA banked after 15-30 minutes; Map 2 felt grindy from about Day 12 and later prices may need lowering. D46-D49 respond to the early game and engagement. Owner to judge in play testing; daily dust settling remains an unused idea.
