@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
-import { TILE_COLORS, TILES_PER_PANEL_SIDE, WAX_COLOR } from '../rules/config';
+import { MAPS, TILE_COLORS, TILES_PER_PANEL_SIDE, WAX_COLOR } from '../rules/config';
 import { CounterBank, rechargeProgress } from '../rules/counterBank';
-import { colorLevel, expectedPowain, getTile, isWaxed } from '../rules/grid';
+import { Door, colorLevel, expectedPowain, getTile, isPanel, isWaxed } from '../rules/grid';
 import { RunState, upgradeValue, newRun } from '../rules/run';
 import { DialogCursor, markSeen, wasSeen } from '../story/dialog';
 import { SCRIPT } from '../story/script';
 import { COLORS, FONT, HEIGHT, WIDTH, addButton, hex } from '../ui';
+import { Facility } from './Facility';
 import { TERMINAL_FONT, TERMINAL_GREEN } from './TerminalScene';
 
 export const HUD_HEIGHT = 96;
@@ -54,6 +55,9 @@ export abstract class MapScene extends Phaser.Scene {
   private secondsText!: Phaser.GameObjects.Text;
   private powainText!: Phaser.GameObjects.Text;
   private waxText!: Phaser.GameObjects.Text;
+  // D55/D57: Map 3's facility and the bars of its closed doors.
+  protected facility?: Facility;
+  private doorBars = new Map<Door, Phaser.GameObjects.Rectangle[]>();
 
   init(data: { run?: RunState }) {
     this.run = data.run ?? newRun();
@@ -77,12 +81,26 @@ export abstract class MapScene extends Phaser.Scene {
 
     this.mapX = Math.round((WIDTH - map.panelsX * PANEL) / 2);
     this.mapY = HUD_HEIGHT + TURRET_MARGIN;
-    this.add
-      .rectangle(this.mapX - 6, this.mapY - 6, map.panelsX * PANEL + 8, map.panelsY * PANEL + 8, COLORS.gutter)
-      .setOrigin(0)
-      .setStrokeStyle(6, COLORS.mapEdge);
+    const def = MAPS[this.run.mapIndex];
+    this.facility = undefined;
+    this.doorBars = new Map();
+    if (def.sections) {
+      // D55: each block of panels on its own; the rest is scenery.
+      if (def.scenery === 'facility') this.facility = new Facility(this, this.mapX, this.mapY);
+      for (const r of def.sections.flat()) {
+        this.add
+          .rectangle(this.mapX + r.px * PANEL - 4, this.mapY + r.py * PANEL - 4, r.w * PANEL + 8, r.h * PANEL + 8, COLORS.gutter)
+          .setOrigin(0);
+      }
+    } else {
+      this.add
+        .rectangle(this.mapX - 6, this.mapY - 6, map.panelsX * PANEL + 8, map.panelsY * PANEL + 8, COLORS.gutter)
+        .setOrigin(0)
+        .setStrokeStyle(6, COLORS.mapEdge);
+    }
     this.tiles = this.add.graphics();
     this.drawTiles();
+    this.drawDoors();
 
     this.input.keyboard!.on('keydown', (event: KeyboardEvent) => {
       if (event.repeat) return; // press-once inputs
@@ -95,6 +113,37 @@ export abstract class MapScene extends Phaser.Scene {
   }
 
   protected onKey(_event: KeyboardEvent) {}
+
+  // D55: a red bar on every panel border of a closed door.
+  private drawDoors() {
+    for (const door of this.run.map.doors) {
+      if (door.open) continue;
+      const bars = door.edges.map(([px, py, dir]) => {
+        const [x, y] = dir === 'right'
+          ? [this.mapX + (px + 1) * PANEL, this.mapY + py * PANEL + PANEL / 2]
+          : [this.mapX + px * PANEL + PANEL / 2, this.mapY + (py + 1) * PANEL];
+        const [w, h] = dir === 'right' ? [12, PANEL] : [PANEL, 12];
+        return this.add.rectangle(x, y, w, h, 0xe53935).setStrokeStyle(2, 0x000000).setDepth(2);
+      });
+      this.doorBars.set(door, bars);
+    }
+  }
+
+  // The door slides away; returns its centre for a caption.
+  protected openDoorBars(door: Door): [number, number] {
+    const bars = this.doorBars.get(door) ?? [];
+    this.doorBars.delete(door);
+    const cx = bars.reduce((s, b) => s + b.x, 0) / Math.max(1, bars.length);
+    const cy = bars.reduce((s, b) => s + b.y, 0) / Math.max(1, bars.length);
+    bars.forEach((b) => {
+      b.setFillStyle(0x7cfc00);
+      this.tweens.add({
+        targets: b, scaleY: b.width < b.height ? 0 : 1, scaleX: b.width < b.height ? 1 : 0, alpha: 0, duration: 450, delay: 150,
+        onComplete: () => b.destroy(),
+      });
+    });
+    return [cx, cy];
+  }
 
   // Draw with the fixed UI camera only (containers include their children).
   protected toUi<T extends Phaser.GameObjects.GameObject>(go: T): T {
@@ -162,6 +211,7 @@ export abstract class MapScene extends Phaser.Scene {
       for (let tx = 0; tx < map.tilesX; tx++) {
         const px = Math.floor(tx / TILES_PER_PANEL_SIDE);
         const py = Math.floor(ty / TILES_PER_PANEL_SIDE);
+        if (!isPanel(map, px, py)) continue;
         const x = this.mapX + px * PANEL + GUTTER / 2 + (tx % TILES_PER_PANEL_SIDE) * TILE;
         const y = this.mapY + py * PANEL + GUTTER / 2 + (ty % TILES_PER_PANEL_SIDE) * TILE;
         g.fillStyle(isWaxed(map, px, py) ? WAX_FILL : TILE_FILL[colorLevel(getTile(map, tx, ty))]);

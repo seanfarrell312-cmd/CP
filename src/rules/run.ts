@@ -38,6 +38,8 @@ export interface RunState {
   wax: number;
   // The day number of the first day played on this map (D44).
   firstMapDay: number;
+  // D56: Map 2's first day; Map 3 keeps counting Map 2's wave chart from it.
+  map2FirstDay: number;
   checkpoint: Checkpoint;
   // What RESET PURCHASES restores (D34): the state when the upgrade screen opened.
   shopStart: Checkpoint;
@@ -59,6 +61,7 @@ export function newRun(): RunState {
     unlocked: noLevels(),
     wax: 0,
     firstMapDay: 1,
+    map2FirstDay: 0,
     checkpoint: undefined!,
     shopStart: undefined!,
     onboarded: { day: false, night: false },
@@ -75,9 +78,7 @@ function snapshot(run: RunState): Checkpoint {
 // D13: back to the map-arrival checkpoint with the map reset. On Map 1 that is the fresh game.
 export function tryAgain(run: RunState): void {
   const c = run.checkpoint;
-  run.map = createMap(MAPS[run.mapIndex]);
-  run.px = 0;
-  run.py = 0;
+  placeOnNewMap(run);
   run.bank = c.bank;
   run.unlocked = { ...c.unlocked };
   run.wax = c.wax;
@@ -181,21 +182,28 @@ export function isLastMap(run: RunState): boolean {
   return run.mapIndex === MAPS.length - 1;
 }
 
+// A fresh copy of the current map, with Scrubby on its start panel (P(0,0) unless set, D55).
+function placeOnNewMap(run: RunState): void {
+  const def = MAPS[run.mapIndex];
+  run.map = createMap(def);
+  [run.px, run.py] = def.startPanel ?? [0, 0];
+}
+
 // NEXT MAP: purchases, POWA, Wax and the day number carry over; the new map starts dirty
-// with Scrubby on P(0,0), and this arrival becomes the TRY AGAIN checkpoint (D13).
+// with Scrubby on its start panel, and this arrival becomes the TRY AGAIN checkpoint (D13).
 export function nextMap(run: RunState): void {
   run.mapIndex++;
-  run.map = createMap(MAPS[run.mapIndex]);
-  run.px = 0;
-  run.py = 0;
+  placeOnNewMap(run);
   run.firstMapDay = run.day + 1;
+  if (run.mapIndex === 1) run.map2FirstDay = run.firstMapDay;
   run.checkpoint = snapshot(run);
   run.shopStart = snapshot(run);
 }
 
 // D44: Map 1 waves go by day number; Map 2 has its own table, counted from its first day.
+// D56: Map 3 carries on counting Map 2's table.
 export function waveForRun(run: RunState): WaveRow {
-  return run.mapIndex === 0 ? waveForDay(run.day) : map2WaveForDay(run.day - run.firstMapDay + 1);
+  return run.mapIndex === 0 ? waveForDay(run.day) : map2WaveForDay(run.day - run.map2FirstDay + 1);
 }
 
 export function dayOptions(run: RunState): DayOptions {

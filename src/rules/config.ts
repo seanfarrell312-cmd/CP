@@ -29,6 +29,12 @@ export interface MapDefinition {
   // Starting tile cleanliness (default 0), and blocks that start at TILE_MIN instead.
   start?: number;
   filthy?: PanelRect[];
+  // D55: a map made of sections. Panels outside every section are scenery; doors sit where sections touch.
+  sections?: PanelRect[][];
+  // Where Scrubby starts (default P(0,0)).
+  startPanel?: [number, number];
+  // D57: drawn around the sections, and revealed on SPOTLESS! instead of the D48 fence.
+  scenery?: 'facility';
 }
 
 export const MAPS: MapDefinition[] = [
@@ -47,6 +53,29 @@ export const MAPS: MapDefinition[] = [
       { px: 19, py: 13, w: 4, h: 4 },
       { px: 2, py: 18, w: 5, h: 4 },
       { px: 14, py: 20, w: 3, h: 3 },
+    ],
+  },
+  // D55: the Emergency Panels, from the owner's sketch. 140 Panels in 7 sections around the dark facility.
+  {
+    name: 'Map 3',
+    label: 'Emergency Panels',
+    panelsX: 37,
+    panelsY: 15,
+    start: -4,
+    startPanel: [3, 13],
+    scenery: 'facility',
+    sections: [
+      [
+        { px: 0, py: 0, w: 7, h: 3 },
+        { px: 3, py: 3, w: 3, h: 11 },
+        { px: 0, py: 7, w: 3, h: 2 },
+      ],
+      [{ px: 7, py: 1, w: 4, h: 2 }],
+      [{ px: 11, py: 0, w: 6, h: 4 }],
+      [{ px: 17, py: 1, w: 4, h: 2 }],
+      [{ px: 21, py: 0, w: 5, h: 4 }],
+      [{ px: 26, py: 1, w: 4, h: 2 }],
+      [{ px: 30, py: 1, w: 4, h: 3 }],
     ],
   },
 ];

@@ -1,6 +1,6 @@
 import { BRUSH_AOE_DEFAULT, BrushAoe, COMBO, DEFAULT_BRUSH_POWA, DEFAULT_SCRUB_MAX, TILE_MAX, TILES_PER_PANEL_SIDE as SIDE, TIMERS } from './config';
 import { CounterBank, createBank, spend, tickBank } from './counterBank';
-import { MapState, applyBrush, getTile, inBounds, isFullyClean, isWaxed, panelRating } from './grid';
+import { Door, MapState, applyBrush, canStep, getTile, isFullyClean, isWaxed, openDoors, panelRating } from './grid';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
@@ -34,6 +34,8 @@ export interface DayState {
   comboEnabled: boolean;
   combo: number;
   scrubBase: number;
+  // D55: doors the last move opened.
+  opened: Door[];
 }
 
 export interface DayOptions {
@@ -71,6 +73,7 @@ export function createDay(map: MapState, opts: DayOptions = {}): DayState {
     comboEnabled: opts.combo ?? false,
     combo: 0,
     scrubBase,
+    opened: [],
   };
 }
 
@@ -101,12 +104,14 @@ export function tryMove(day: DayState, dir: Direction): MoveResult {
   const [dx, dy] = STEPS[dir];
   const nx = day.px + dx;
   const ny = day.py + dy;
-  if (!inBounds(day.map, nx, ny)) return 'blocked';
+  // The map edge, scenery and closed doors (D55) stop the move for free.
+  if (!canStep(day.map, day.px, day.py, nx, ny)) return 'blocked';
   const free = isWaxed(day.map, nx, ny) || (day.bristles && panelRating(day.map, nx, ny) >= TILE_MAX);
   if (!free && !spend(day.scrub)) return 'no-counter';
   day.px = nx;
   day.py = ny;
   day.started = true;
+  day.opened = [];
   if (free) {
     day.feedback = day.bristles ? 'slip' : 'none';
   } else {
@@ -114,6 +119,7 @@ export function tryMove(day: DayState, dir: Direction): MoveResult {
     applyBrush(day.map, nx, ny, day.brushPowa, day.aoe);
     const cleaner = panelSum(day.map, nx, ny) > before;
     day.feedback = !cleaner ? 'none' : panelRating(day.map, nx, ny) > 0 ? 'scrub' : 'ick';
+    day.opened = openDoors(day.map);
     // D15/D23: checked after each scrub; victory stops the clock at once.
     if (isFullyClean(day.map)) day.victory = day.ended = true;
   }

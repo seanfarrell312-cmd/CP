@@ -317,6 +317,34 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
 **Overrides:** On-screen map names.
 **Test:** Win Map 1: the Score screen says "Power Panel 1 is SPOTLESS!" and the next screen "POWER PANEL 1 COMPLETE!".
 
+### D55: Map 3, the Emergency Panels (confirmed 2026-11-12, story Phase 2, owner's Map 3 sketch)
+**Why:** Story stage S03 (`STORY_EXPANSION_SPEC.md` 5.1, OPEN-01) needed the owner's Map 3 layout.
+**Decision:**
+1. Map 3 comes after Map 2 and shows as **Emergency Panels**. It has **140 Panels in 7 sections** inside a 37 x 15 Panel area, read from the owner's sketch (Panel coordinates, x across, y down):
+   - A: P(0..6, 0..2), the column P(3..5, 3..13) and P(0..2, 7..8)
+   - B: P(7..10, 1..2); C: P(11..16, 0..3); D: P(17..20, 1..2); E: P(21..25, 0..3); F: P(26..29, 1..2); G: P(30..33, 1..3)
+2. Everything else is scenery (grass, the facility building, the walkway): not walkable, never dirtied, and not counted for POWA-IN or SPOTLESS!.
+3. Every Panel starts at **-4**, with no extra filthy patches. Scrubby starts on **P(3,13)**, the bottom-left of the column.
+4. **Doors** sit wherever two sections touch. A door opens the moment **every Panel of a section on either side is +8**, so a section between two doors opens both. Once open, a door **stays open** for the rest of the map (TRY AGAIN resets the map, so the doors close again). A move into a closed door does nothing and costs nothing, like the map edge.
+5. SPOTLESS! needs all 140 Panels at +8 and pays **560 POWA** once (140 x 4, the D23 routine).
+6. All upgrades are on sale as on Map 2. Powerful Shots is not added yet (spec OPEN-09).
+**Test:** On a new Map 3, a move from A into B is blocked; after A is all +8 it goes through. Dirtying A afterwards keeps the door open.
+
+### D56: Map 3 nights (confirmed 2026-11-12, story Phase 2)
+**Decision:**
+1. Map 3 nights **continue Map 2's wave chart** (D44/D45/D50): its row is the number of days since Map 2's first day, so it keeps getting harder from where Map 2 left off.
+2. Mud Boys keep the wave's spawn side (bottom/left/right, D16), and spawn on that side's **outer Panels**: the first Panel met coming in from that side, in each column (bottom) or row (left/right). A Big Mud Boy spawns on a 2x2 block of one section whose two leading Panels are both outer Panels. On Maps 1 and 2 this is the same as before.
+3. Mud Boys **never pass a door**, open or closed, and never leave the Panels: a forward move into a door, scenery or the map edge pops them where they stand (D10/D45 rules), and a knockback into one is a SPLAT! (removed, no dirt). Pops don't dirty scenery.
+**Test:** Map 3 bottom-side wave: Mud Boys spawn on each column's lowest Panel. A Mud Boy walking into a door pops on the Panel before it.
+
+### D57: Map 2 to Map 3, and the end of Map 3 (confirmed 2026-11-12, story Phase 2)
+**Decision:**
+1. Map 2 now ends like Map 1: Score screen, **POWER PANEL 2 COMPLETE!** with NEXT MAP, the S02 supervisor terminal, then Map 3's upgrade screen. Bank, upgrades, Wax and day carry over, and Map 3 arrival is the TRY AGAIN checkpoint (D13).
+2. On Map 3 the facility building is **dark, colourless and featureless** while playing. The final scrub shows SPOTLESS! and pays once, with **no fence, no night and no Score screen**. The view zooms out and the building is revealed in three steps: (a) the lamps light up and the **CLEAN POWA CO.** sign appears left to right; (b) the logo (a placeholder square marked LOGO) with mud graffiti and **WHY?**; (c) the lower half of the building and the walkway, with mud and blood streaks and the mess pouring out of the open door.
+3. Then the yellow intrusion (`S03.yellowFirst`, 5 lines, glitch in and out), the green promotion (`S03.greenPromotion`, 7 lines), then **THANK YOU FOR PLAYING!** with the Map 3 payout shown. That is the end of the game until Map 4 is built.
+**Overrides:** D23 and D53 rule 5 (Map 2 is no longer the last map), D48 (no fence on Map 3).
+**Test:** Win Map 2: Score, POWER PANEL 2 COMPLETE!, NEXT MAP, S02 terminal, Map 3 upgrade screen. Win Map 3: +560 once, reveal, yellow then green terminal, THANK YOU.
+
 ## Still open
 
 - Upgrade pacing: costs are the BALANCE `Upgrade Levels` ones as-is. Play tests 4 and 5 found Map 1 can be finished by Day 6-7 once Bristles, 4 Extra Scrubbers, fast Scrubbing Speed and Supped UP Brush Size stack (near-unlimited movement). Play test 6 found both maps done by about Day 6; D41-D45 (prices, Map 1 caps, dirty Map 2, Big Mud Boys) respond to it. Play test 7 (D41-D45) finished on Day 16 with 6,936 POWA banked after 15-30 minutes; Map 2 felt grindy from about Day 12 and later prices may need lowering. D46-D49 respond to the early game and engagement. Owner to judge in play testing; daily dust settling remains an unused idea.
@@ -352,3 +380,9 @@ A scrub that changes nothing (a +8 panel without Bristles) shows no word.
   - The Day 1 "Press W A S D" hint line still shows after the tutorial closes.
   - Story text types at about 40 characters per second.
   - Later story stages (S03 onward) are not started; see `STORY_EXPANSION_SPEC.md` for their open items.
+- Map 3 derived details (D55-D57 build), flagged for owner review:
+  - Panel counts and section shapes are a reading of a hand-drawn sketch; the owner can correct any of them.
+  - Doors are drawn as red bars on the section borders; an opening door shows DOOR OPEN! and slides away.
+  - The reveal takes about 9 s and can't be skipped; the lamps above the building are the "lights switching on" from the spec.
+  - The facility art is placeholder shapes drawn in code (D28); the logo square says LOGO until there is an image.
+  - Map 4 (the office sketch) is not started: spec Phase 3 still needs its numbers.

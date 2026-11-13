@@ -10,7 +10,7 @@ import {
   WaveRow,
 } from './config';
 import { CounterBank, createBank, spend, tickBank } from './counterBank';
-import { MapState, applyMud, inBounds } from './grid';
+import { MapState, applyMud, isPanel, sectionOf } from './grid';
 
 export interface MudBoy {
   id: number;
@@ -105,27 +105,43 @@ const FORWARD: Record<Edge, [number, number]> = {
   right: [-1, 0],
 };
 
+// D56: the outer panel of each column (top/bottom) or row (left/right): the first panel met
+// coming in from that side. On a plain rectangular map that is the edge row or column.
+function outerPanel(map: MapState, edge: Edge, line: number): [number, number] | undefined {
+  const vertical = edge === 'top' || edge === 'bottom';
+  const n = vertical ? map.panelsY : map.panelsX;
+  for (let i = 0; i < n; i++) {
+    const k = edge === 'top' || edge === 'left' ? i : n - 1 - i;
+    const [px, py] = vertical ? [line, k] : [k, line];
+    if (isPanel(map, px, py)) return [px, py];
+  }
+  return undefined;
+}
+
 function edgePanels(map: MapState, edge: Edge): [number, number][] {
+  const lines = edge === 'top' || edge === 'bottom' ? map.panelsX : map.panelsY;
   const panels: [number, number][] = [];
-  if (edge === 'top' || edge === 'bottom') {
-    const py = edge === 'top' ? 0 : map.panelsY - 1;
-    for (let px = 0; px < map.panelsX; px++) panels.push([px, py]);
-  } else {
-    const px = edge === 'left' ? 0 : map.panelsX - 1;
-    for (let py = 0; py < map.panelsY; py++) panels.push([px, py]);
+  for (let i = 0; i < lines; i++) {
+    const p = outerPanel(map, edge, i);
+    if (p) panels.push(p);
   }
   return panels;
 }
 
-// Top-left corners of the 2x2 blocks flush with an edge.
+// Top-left corners of the 2x2 blocks flush with an edge: two neighbouring outer panels and the
+// two panels behind them, all in one section.
 function edgeBlocks(map: MapState, edge: Edge): [number, number][] {
+  const vertical = edge === 'top' || edge === 'bottom';
+  const lines = vertical ? map.panelsX : map.panelsY;
+  const [fx, fy] = FORWARD[edge];
   const out: [number, number][] = [];
-  if (edge === 'top' || edge === 'bottom') {
-    const py = edge === 'top' ? 0 : map.panelsY - 2;
-    for (let px = 0; px <= map.panelsX - 2; px++) out.push([px, py]);
-  } else {
-    const px = edge === 'left' ? 0 : map.panelsX - 2;
-    for (let py = 0; py <= map.panelsY - 2; py++) out.push([px, py]);
+  for (let i = 0; i < lines - 1; i++) {
+    const p = outerPanel(map, edge, i);
+    const q = outerPanel(map, edge, i + 1);
+    if (!p || !q || (vertical ? p[1] !== q[1] : p[0] !== q[0])) continue;
+    const corner: [number, number] = [Math.min(p[0], p[0] + fx), Math.min(p[1], p[1] + fy)];
+    const s = sectionOf(map, p[0], p[1]);
+    if (block(corner[0], corner[1], 2).every(([x, y]) => sectionOf(map, x, y) === s)) out.push(corner);
   }
   return out;
 }
@@ -185,7 +201,8 @@ function moveForward(night: NightState, mb: MudBoy, dx: number, dy: number): boo
   if (mb.size === 2) return moveBigForward(night, mb, dx, dy);
   const nx = mb.px + dx;
   const ny = mb.py + dy;
-  if (!inBounds(night.map, nx, ny)) {
+  // D56: the map edge, scenery or a door (open or closed) pops it where it stands.
+  if (sectionOf(night.map, nx, ny) !== sectionOf(night.map, mb.px, mb.py)) {
     pop(night, mb);
     return true;
   }
@@ -204,7 +221,8 @@ function moveBigForward(night: NightState, mb: MudBoy, dx: number, dy: number): 
   const nx = mb.px + 2 * dx;
   const ny = mb.py + 2 * dy;
   const target = block(nx, ny, 2);
-  if (!target.every(([x, y]) => inBounds(night.map, x, y))) {
+  const s = sectionOf(night.map, mb.px, mb.py);
+  if (!target.every(([x, y]) => sectionOf(night.map, x, y) === s)) {
     pop(night, mb);
     return true;
   }
@@ -228,7 +246,8 @@ function moveBigForward(night: NightState, mb: MudBoy, dx: number, dy: number): 
 function pushBack(night: NightState, mb: MudBoy, dx: number, dy: number): boolean {
   const nx = mb.px + dx;
   const ny = mb.py + dy;
-  if (!inBounds(night.map, nx, ny)) {
+  // D56: knocked into the map edge, scenery or a door: SPLAT!
+  if (sectionOf(night.map, nx, ny) !== sectionOf(night.map, mb.px, mb.py)) {
     remove(night, mb);
     night.events.push({ type: 'splat', id: mb.id, px: nx, py: ny });
     return true;

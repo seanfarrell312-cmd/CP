@@ -210,7 +210,7 @@ describe('map victory and Map 2 (D15, D23, D13)', () => {
     nextMap(run);
     expect([run.mapIndex, run.map.panelsX, run.px, run.py, run.day, run.bank, run.wax]).toEqual([1, 25, 0, 0, 6, 395, 2]);
     const fresh = [...run.map.tiles];
-    expect(isLastMap(run)).toBe(true);
+    expect(isLastMap(run)).toBe(false); // D57: Map 3 follows
     expect(firstDayIsFree(run)).toBe(false);
 
     unlockNext(run, 'clipSize');

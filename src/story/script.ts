@@ -7,7 +7,9 @@ export type StoryId =
   | 'S01.dayTutorial'
   | 'S01.nightTutorial'
   | 'S01.supervisorOutro'
-  | 'S02.supervisorOutro';
+  | 'S02.supervisorOutro'
+  | 'S03.yellowFirst'
+  | 'S03.greenPromotion';
 
 export const SCRIPT: Record<Exclude<StoryId, 'intro.emergencyComic'>, string[]> = {
   'intro.supervisorBoot': [
@@ -54,5 +56,16 @@ export const SCRIPT: Record<Exclude<StoryId, 'intro.emergencyComic'>, string[]> 
     "All you've got to do is use your loadout to clean the Emergency Panels and we'll have full access again!",
     "The Emergency Panels have fewer power cells than you'd expect, but there's a trick to cleaning them you'll have to decipher once you're there.",
     'Stay alert for Mud Boys. If all goes well, there might even be a promotion in it for you.',
+  ],
+  // D57: the first yellow intrusion, after the facility reveal. The speaker stays anonymous.
+  'S03.yellowFirst': ['Why?', 'Why did you wake up?', '...', "It doesn't matter.", 'We know your weakness.'],
+  'S03.greenPromotion': [
+    'Scrubby? You still there?',
+    'It looks like the connection dropped for a second.',
+    "I've got good news! After reviewing your performance cleaning the exterior Power Panels, we've decided to promote you to Janitorial Technician!",
+    'Your first task will be to clean up the main foyer and work areas of the office complex to restore power to the internal diagnostic systems.',
+    "You'll need some slightly specialized equipment to get this done. Thankfully, all you need to do is SCRUB some of the kinetic POWA Panels inside the office so that the external POWA system can transfer POWA internally.",
+    'How intuitive is that? Our bosses sure are dynamite engineers.',
+    "Well, don't let me keep you, Scrubby. Congrats on that promotion! I'll be in touch.",
   ],
 };

@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
-import { COMBO, READY_COUNTDOWN, WAX_COLOR } from '../rules/config';
+import { COMBO, MAPS, READY_COUNTDOWN, WAX_COLOR } from '../rules/config';
 import { DayState, Direction, MoveFeedback, createDay, tickDay, tryMove, tryWax } from '../rules/dayPhase';
 import { claimVictory, dayOptions, firstDayIsFree, needsDayTutorial } from '../rules/run';
 import { COLORS, FONT, HEIGHT, WIDTH } from '../ui';
 import { HUD_HEIGHT, MapScene } from './MapScene';
+import { TerminalData } from './TerminalScene';
+import { glitchBars } from './glitch';
 
 const KEYS: Record<string, Direction> = {
   KeyW: 'up',
@@ -123,6 +125,11 @@ export class DayScene extends MapScene {
       this.placeScrubby(true);
       const fb = this.day.feedback;
       if (fb !== 'none') this.popWord(...FEEDBACK[fb]);
+      // D55: a door the scrub opened slides away.
+      for (const door of this.day.opened) {
+        const [x, y] = this.openDoorBars(door);
+        this.popWord('DOOR OPEN!', '#7cfc00', x, y);
+      }
       this.updateCombo();
     } else if (result === 'no-counter') {
       this.deniedUntil = this.time.now + 250;
@@ -139,6 +146,10 @@ export class DayScene extends MapScene {
     const powain = claimVictory(this.run);
     const spotless = this.banner('SPOTLESS!');
     this.tweens.add({ targets: spotless, alpha: 0, delay: 1000, duration: 300 });
+    if (MAPS[this.run.mapIndex].scenery === 'facility') {
+      this.revealFacility(powain);
+      return;
+    }
     // D48: show the whole map and fence it in, then the Score screen.
     this.time.delayedCall(800, () => this.fitBigMap(700));
     this.time.delayedCall(1300, () => this.buildFence(() => {
@@ -148,6 +159,17 @@ export class DayScene extends MapScene {
         fontFamily: FONT, fontSize: '26px', color: '#ffffff', stroke: '#000000', strokeThickness: 6,
       }).setOrigin(0.5).setDepth(5);
       this.time.delayedCall(1500, () => this.scene.start('Score', { run: this.run, powain, victory: true }));
+    }));
+  }
+
+  // D57: Map 3 has no fence or Score screen. The facility lights up, then the yellow intrusion
+  // glitches in, then the green promotion, then the end screen with the payout (already banked).
+  private revealFacility(powain: number) {
+    this.time.delayedCall(800, () => this.fitBigMap(700));
+    this.time.delayedCall(1600, () => this.facility?.reveal(() => {
+      const promotion: TerminalData = { script: 'S03.greenPromotion', glitchIn: true, next: 'Victory', nextData: { run: this.run, powain } };
+      const intrusion: TerminalData = { script: 'S03.yellowFirst', mode: 'yellow', next: 'Terminal', nextData: promotion };
+      glitchBars(this, 450, () => this.scene.start('Terminal', intrusion), (g) => this.toUi(g));
     }));
   }
 
@@ -184,9 +206,9 @@ export class DayScene extends MapScene {
     this.tweens.add({ targets: rails, alpha: 1, delay: total, duration: 250, onComplete: done });
   }
 
-  // D47: a word that rises from Scrubby's panel and fades.
-  private popWord(word: string, color: string) {
-    const [x, y] = this.panelCenter(this.day.px, this.day.py);
+  // D47: a word that rises from Scrubby's panel (or a given point) and fades.
+  private popWord(word: string, color: string, ...at: [number, number] | []) {
+    const [x, y] = at.length ? at : this.panelCenter(this.day.px, this.day.py);
     const t = this.add
       .text(x, y - 24, word, { fontFamily: FONT, fontSize: '22px', color, stroke: '#000000', strokeThickness: 5 })
       .setOrigin(0.5)

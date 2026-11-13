@@ -2,14 +2,17 @@ import Phaser from 'phaser';
 import { DialogCursor, markSeen, wasSeen } from '../story/dialog';
 import { SCRIPT, StoryId } from '../story/script';
 import { HEIGHT, WIDTH } from '../ui';
+import { glitchBars } from './glitch';
 
 export const TERMINAL_FONT = '"Courier New", Courier, monospace';
 export const TERMINAL_GREEN = '#39ff6a';
 
 export interface TerminalData {
   script: Exclude<StoryId, 'intro.emergencyComic'>;
-  // 'yellow' is the anonymous intrusion style; no Phase 1 scene uses it yet.
+  // 'yellow' is the anonymous intrusion style (D57: first used after Map 3).
   mode?: 'green' | 'yellow';
+  // Open with a glitch (the green terminal straight after a yellow intrusion, D57).
+  glitchIn?: boolean;
   // Where to go when the last line is dismissed, and what to hand it.
   next: string;
   nextData: object;
@@ -24,6 +27,7 @@ export class TerminalScene extends Phaser.Scene {
   private yellow = false;
   private blink = 0;
   private finished = false;
+  private jitterAt = 0;
 
   constructor() {
     super('Terminal');
@@ -35,7 +39,9 @@ export class TerminalScene extends Phaser.Scene {
     this.cursor = new DialogCursor(SCRIPT[data.script]);
     this.blink = 0;
     this.finished = false;
+    this.jitterAt = 1200;
     this.cameras.main.setBackgroundColor(0x000000);
+    if (this.yellow || data.glitchIn) glitchBars(this, 400);
 
     if (this.yellow) {
       this.body = this.add
@@ -77,6 +83,12 @@ export class TerminalScene extends Phaser.Scene {
     this.cursor.tick(delta / 1000);
     this.blink += delta;
     this.render();
+    // The intrusion text twitches now and then.
+    if (this.yellow && this.blink >= this.jitterAt) {
+      this.jitterAt = this.blink + 900 + Math.random() * 1400;
+      this.body.setX(WIDTH / 2 + (Math.random() < 0.5 ? -6 : 6));
+      this.time.delayedCall(70, () => this.body.setX(WIDTH / 2));
+    }
   }
 
   private render() {
@@ -92,6 +104,10 @@ export class TerminalScene extends Phaser.Scene {
     if (this.finished) return;
     this.finished = true;
     markSeen(this.story.script);
+    if (this.yellow) {
+      glitchBars(this, 450, () => this.scene.start(this.story.next, this.story.nextData));
+      return;
+    }
     this.cameras.main.fadeOut(250, 0, 0, 0);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () =>
       this.scene.start(this.story.next, this.story.nextData),

@@ -61,7 +61,7 @@ describe('D53 script', () => {
   });
 
   it('D54: the maps show as Power Panels', () => {
-    expect(MAPS.map((m) => m.label)).toEqual(['Power Panel 1', 'Power Panel 2']);
+    expect(MAPS.map((m) => m.label)).toEqual(['Power Panel 1', 'Power Panel 2', 'Emergency Panels']);
   });
 });
 
